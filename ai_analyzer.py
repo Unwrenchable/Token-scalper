@@ -18,6 +18,10 @@ class AITokenAnalyzer:
     and sentiment analysis for token trading decisions
     """
     
+    # Constants
+    MAX_CONTRACT_CODE_LENGTH = 2000  # Maximum chars of contract code to send to AI
+    DEFAULT_TEMPERATURE = 0.3  # Lower temperature for more consistent analysis
+    
     def __init__(self, config: Dict):
         """
         Initialize AI analyzer with configuration
@@ -32,6 +36,7 @@ class AITokenAnalyzer:
         self.api_key = self.ai_config.get('api_key', '')
         self.model = self.ai_config.get('model', 'gpt-4')
         self.max_tokens = self.ai_config.get('max_tokens', 500)
+        self.temperature = self.ai_config.get('temperature', self.DEFAULT_TEMPERATURE)
         
         if self.enabled and not self.api_key:
             logger.warning("⚠️ AI analysis enabled but no API key provided")
@@ -198,7 +203,7 @@ Token Address: {token_address}
 
 """
         if contract_code:
-            prompt += f"Contract Code:\n{contract_code[:2000]}...\n\n"  # Limit code length
+            prompt += f"Contract Code:\n{contract_code[:self.MAX_CONTRACT_CODE_LENGTH]}...\n\n"  # Limit code length
         
         prompt += """Analyze for:
 1. Honeypot indicators (can buy but cannot sell)
@@ -252,7 +257,7 @@ Provide analysis in JSON format:
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": self.max_tokens,
-            "temperature": 0.3  # Lower temperature for more consistent analysis
+            "temperature": self.temperature  # Configurable temperature
         }
         
         response = requests.post(url, headers=headers, json=data, timeout=30)

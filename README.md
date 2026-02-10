@@ -418,6 +418,7 @@ The `config.json` file should only contain non-sensitive trading parameters:
   "model": "gpt-4",                    // Model to use (gpt-4, gpt-3.5-turbo, claude-3-opus, etc.)
   "api_key": "",                       // API key (better to use .env: AI_API_KEY)
   "max_tokens": 500,                   // Max tokens per AI response
+  "temperature": 0.3,                  // AI creativity (0.0-1.0, lower = more consistent)
   "risk_threshold": 70,                // Reject tokens with AI risk score > 70
   "min_sentiment_score": 40            // Minimum sentiment score to consider
 }
@@ -433,6 +434,7 @@ The `config.json` file should only contain non-sensitive trading parameters:
    ```bash
    AI_API_KEY="your_api_key_here"
    ```
+   Note: Adding an API key to .env does NOT auto-enable AI. You must still set `"enabled": true` in config.json.
 
 3. **Enable in config.json**:
    ```json
@@ -446,6 +448,7 @@ The `config.json` file should only contain non-sensitive trading parameters:
 4. **Configure risk thresholds**:
    - `risk_threshold`: Tokens with AI risk score above this are rejected (default: 70)
    - `min_sentiment_score`: Minimum sentiment score to consider buying (default: 40)
+   - `temperature`: Controls AI creativity/consistency (0.0 = deterministic, 1.0 = creative, default: 0.3)
 
 **AI Cost Considerations:**
 - OpenAI GPT-4: ~$0.03-0.06 per token analysis

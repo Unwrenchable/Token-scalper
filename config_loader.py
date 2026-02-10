@@ -131,9 +131,10 @@ class ConfigLoader:
             config['ai_analysis']['api_key'] = ai_api_key
             logger.info("🤖 AI API key loaded from environment variables (SECURE)")
             
-            # Auto-enable AI if API key is present and not explicitly disabled
-            if config['ai_analysis'].get('enabled') is None:
-                config['ai_analysis']['enabled'] = True
+            # Only auto-enable if explicitly not disabled in config
+            # If enabled is not set (None/missing), user must explicitly enable in config
+            if 'enabled' not in config['ai_analysis']:
+                logger.info("💡 AI API key found but AI is not enabled. Set 'enabled': true in config.json to activate AI analysis.")
         elif 'ai_analysis' in config and config['ai_analysis'].get('api_key'):
             logger.warning("⚠️ AI API key found in config.json (LESS SECURE)")
             logger.warning("⚠️ Consider moving AI_API_KEY to .env file for better security")

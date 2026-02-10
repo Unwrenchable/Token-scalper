@@ -201,14 +201,17 @@ class SafetyChecker:
             ai_rec = results['ai_recommendation'].get('recommendation', 'neutral')
             ai_risk = results.get('ai_risk_score', 50)
             
+            # Get risk threshold from config
+            risk_threshold = self.ai_analyzer.ai_config.get('risk_threshold', 70)
+            
             # Consider AI recommendation in final decision
             # Token is safe if traditional checks pass AND AI doesn't recommend avoiding
-            # Also check AI risk score is acceptable (< 70 = not high risk)
-            results['safe'] = traditional_safe and ai_rec != 'avoid' and ai_risk < 70
+            # Also check AI risk score is acceptable (< risk_threshold)
+            results['safe'] = traditional_safe and ai_rec != 'avoid' and ai_risk < risk_threshold
             results['ai_enhanced'] = True
             
             if not results['safe'] and traditional_safe:
-                logger.warning(f"⚠️ AI analysis flagged token {token_address} as risky despite passing traditional checks")
+                logger.warning(f"⚠️ AI analysis flagged token {token_address} as risky despite passing traditional checks (risk: {ai_risk}, threshold: {risk_threshold})")
         else:
             results['safe'] = traditional_safe
             results['ai_enhanced'] = False
