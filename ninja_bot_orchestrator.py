@@ -48,9 +48,11 @@ class NinjaBotOrchestrator:
                 wallet_specific_config = config.copy()
                 wallet_specific_config['wallets'] = [wallet_config]
                 
-                # Save temporary config
-                temp_config_path = f'/tmp/ninja_bot_config_{idx}.json'
+                # Save temporary config using tempfile for cross-platform compatibility
+                import tempfile
                 import json
+                temp_dir = tempfile.gettempdir()
+                temp_config_path = f'{temp_dir}/ninja_bot_config_{idx}.json'
                 with open(temp_config_path, 'w') as f:
                     json.dump(wallet_specific_config, f)
                 
@@ -76,19 +78,21 @@ class NinjaBotOrchestrator:
                 
         return bots
         
-    def select_wallet_for_trade(self, token_address: str) -> Optional[str]:
+    def select_wallet_for_trade(self, token_address: str, config: Dict) -> Optional[str]:
         """
         Select which wallet should execute a trade
         Uses stealth logic to distribute trades
         """
         with self.shared_state['lock']:
+            # Get max positions from config
+            max_positions = config.get('ninja_mode', {}).get('max_positions_per_wallet', 5)
+            
             # Filter available wallets
             available_wallets = []
             
             for wallet_id, instance_info in self.bot_instances.items():
                 if instance_info['status'] == 'ready':
                     # Check if wallet has capacity (not too many positions)
-                    max_positions = 5  # Configurable
                     if instance_info['positions_count'] < max_positions:
                         available_wallets.append(wallet_id)
                         
@@ -340,7 +344,7 @@ class NinjaBotOrchestrator:
                 # Distribute new tokens across wallets
                 for token_address in new_tokens:
                     # Select wallet for this trade (stealth distribution)
-                    wallet_id = self.select_wallet_for_trade(token_address)
+                    wallet_id = self.select_wallet_for_trade(token_address, config)
                     
                     if wallet_id:
                         # Execute trade in a separate thread to avoid blocking

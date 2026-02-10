@@ -183,17 +183,19 @@ class MultiWalletManager:
         """
         Calculate approximate USD value of wallet
         
-        In real implementation, would query price oracles
+        WARNING: Uses approximate/outdated prices for estimation only.
+        In production, should use price oracles (Chainlink) or live APIs.
         """
-        # Approximate prices (would use real price feeds in production)
+        # Approximate prices (SHOULD BE REPLACED with real price feeds in production)
+        # These are placeholder values for initial estimation
         base_prices = {
-            1: 3000.0,    # ETH
-            56: 300.0,    # BNB
-            137: 0.80,    # MATIC
-            43114: 35.0,  # AVAX
-            250: 0.50,    # FTM
-            42161: 3000.0, # ETH (Arbitrum)
-            10: 3000.0,   # ETH (Optimism)
+            1: 3000.0,    # ETH - APPROXIMATE
+            56: 300.0,    # BNB - APPROXIMATE
+            137: 0.80,    # MATIC - APPROXIMATE
+            43114: 35.0,  # AVAX - APPROXIMATE
+            250: 0.50,    # FTM - APPROXIMATE
+            42161: 3000.0, # ETH (Arbitrum) - APPROXIMATE
+            10: 3000.0,   # ETH (Optimism) - APPROXIMATE
         }
         
         base_price = base_prices.get(chain_id, 0)

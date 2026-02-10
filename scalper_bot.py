@@ -130,11 +130,19 @@ class TokenScalper:
         chain_config = self.get_active_chain_config()
         return chain_config.get('dex_router', '0x0000000000000000000000000000000000000000')
         
-    def get_stablecoin_address(self, prefer: str = 'usdc') -> str:
-        """Get stablecoin address for active chain"""
+    def get_stablecoin_address(self, prefer: Optional[str] = None) -> str:
+        """
+        Get stablecoin address for active chain
+        
+        Args:
+            prefer: Preferred stablecoin ('usdc', 'usdt', 'dai', 'busd')
+                   If None, uses config setting
+        """
         chain_config = self.get_active_chain_config()
         
-        prefer = self.config.get('profit_management', {}).get('prefer_stablecoin', 'usdc')
+        # Use parameter if provided, otherwise fall back to config
+        if prefer is None:
+            prefer = self.config.get('profit_management', {}).get('prefer_stablecoin', 'usdc')
         
         # Try to get preferred stablecoin
         address_key = f"{prefer}_address"
