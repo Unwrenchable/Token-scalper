@@ -139,6 +139,53 @@ class ConfigLoader:
             logger.warning("⚠️ AI API key found in config.json (LESS SECURE)")
             logger.warning("⚠️ Consider moving AI_API_KEY to .env file for better security")
         
+        # Load social media credentials from environment
+        config = ConfigLoader._load_social_config_from_env(config)
+        
+        return config
+        
+    @staticmethod
+    def _load_social_config_from_env(config: Dict) -> Dict:
+        """
+        Load social media configuration from environment variables
+        
+        Environment variables:
+        TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+        OVERSEER_WEBHOOK_URL, OVERSEER_API_KEY
+        """
+        # Ensure social_media config exists
+        if 'social_media' not in config:
+            config['social_media'] = {
+                'enabled': False,
+                'twitter_enabled': False,
+                'overseer_bot_enabled': False
+            }
+        
+        # Twitter credentials
+        twitter_api_key = os.getenv("TWITTER_API_KEY")
+        twitter_api_secret = os.getenv("TWITTER_API_SECRET")
+        twitter_access_token = os.getenv("TWITTER_ACCESS_TOKEN")
+        twitter_access_secret = os.getenv("TWITTER_ACCESS_SECRET")
+        
+        if all([twitter_api_key, twitter_api_secret, twitter_access_token, twitter_access_secret]):
+            config['social_media']['twitter_api_key'] = twitter_api_key
+            config['social_media']['twitter_api_secret'] = twitter_api_secret
+            config['social_media']['twitter_access_token'] = twitter_access_token
+            config['social_media']['twitter_access_secret'] = twitter_access_secret
+            logger.info("🐦 Twitter credentials loaded from environment variables (SECURE)")
+        elif any([twitter_api_key, twitter_api_secret, twitter_access_token, twitter_access_secret]):
+            logger.warning("⚠️ Incomplete Twitter credentials in environment variables")
+        
+        # Overseer bot credentials
+        overseer_webhook = os.getenv("OVERSEER_WEBHOOK_URL")
+        overseer_api_key = os.getenv("OVERSEER_API_KEY")
+        
+        if overseer_webhook:
+            config['social_media']['overseer_webhook_url'] = overseer_webhook
+            if overseer_api_key:
+                config['social_media']['overseer_api_key'] = overseer_api_key
+            logger.info("🤖 Overseer bot credentials loaded from environment variables (SECURE)")
+        
         return config
         
     @staticmethod

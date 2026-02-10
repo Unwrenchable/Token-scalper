@@ -81,5 +81,35 @@
     "temperature": 0.3,
     "risk_threshold": 70,
     "min_sentiment_score": 40
+  },
+  "social_media": {
+    "enabled": false,
+    "twitter_enabled": false,
+    "twitter_api_key": "",
+    "twitter_api_secret": "",
+    "twitter_access_token": "",
+    "twitter_access_secret": "",
+    "overseer_bot_enabled": false,
+    "overseer_webhook_url": "",
+    "overseer_api_key": "",
+    "min_risk_score": 70,
+    "alert_on_rug_pull": true,
+    "alert_on_high_potential": true
+  },
+  "dashboard": {
+    "enabled": false,
+    "host": "127.0.0.1",
+    "port": 5000
+  },
+  "opportunity_scorer": {
+    "enabled": true,
+    "weight_liquidity": 20,
+    "weight_safety": 25,
+    "weight_developer": 20,
+    "weight_sentiment": 15,
+    "weight_technical": 10,
+    "weight_community": 10,
+    "min_score_for_alert": 75,
+    "excellent_score": 85
   }
 }
