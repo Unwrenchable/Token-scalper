@@ -71,5 +71,14 @@
     "enable_honeypot_check": true,
     "min_contract_age_seconds": 0,
     "max_position_size_eth": 1.0
+  },
+  "ai_analysis": {
+    "enabled": false,
+    "provider": "openai",
+    "model": "gpt-4",
+    "api_key": "",
+    "max_tokens": 500,
+    "risk_threshold": 70,
+    "min_sentiment_score": 40
   }
 }

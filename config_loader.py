@@ -45,6 +45,9 @@ class ConfigLoader:
         # Override wallets with environment variables if present
         config = ConfigLoader._load_wallets_from_env(config)
         
+        # Override AI API key with environment variable if present
+        config = ConfigLoader._load_ai_config_from_env(config)
+        
         return config
         
     @staticmethod
@@ -102,6 +105,39 @@ class ConfigLoader:
         else:
             logger.error("❌ No wallets configured in environment variables or config.json")
             
+        return config
+        
+    @staticmethod
+    def _load_ai_config_from_env(config: Dict) -> Dict:
+        """
+        Load AI configuration from environment variables
+        
+        Environment variables:
+        AI_API_KEY - API key for OpenAI or Anthropic
+        """
+        ai_api_key = os.getenv("AI_API_KEY")
+        
+        if ai_api_key:
+            # Ensure ai_analysis config exists
+            if 'ai_analysis' not in config:
+                config['ai_analysis'] = {
+                    'enabled': False,
+                    'provider': 'openai',
+                    'model': 'gpt-4',
+                    'max_tokens': 500
+                }
+            
+            # Override API key from environment
+            config['ai_analysis']['api_key'] = ai_api_key
+            logger.info("🤖 AI API key loaded from environment variables (SECURE)")
+            
+            # Auto-enable AI if API key is present and not explicitly disabled
+            if config['ai_analysis'].get('enabled') is None:
+                config['ai_analysis']['enabled'] = True
+        elif 'ai_analysis' in config and config['ai_analysis'].get('api_key'):
+            logger.warning("⚠️ AI API key found in config.json (LESS SECURE)")
+            logger.warning("⚠️ Consider moving AI_API_KEY to .env file for better security")
+        
         return config
         
     @staticmethod
