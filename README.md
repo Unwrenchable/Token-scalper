@@ -1,6 +1,6 @@
-# Token Scalper Bot 🚀
+# Token Scalper Bot 🚀🥷
 
-A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection and moonshot position retention.
+A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, and **ninja mode for stealth operation**.
 
 ## Features ✨
 
@@ -18,20 +18,31 @@ A sophisticated cryptocurrency trading bot that monitors for new token launches,
   - **Responsible selling in chunks** to minimize market impact
   - Configurable delays between sells to prevent chart crashes
   - Price impact calculation and optimization
-- **🚨 Rug Pull Protection** (NEW):
+- **🚨 Rug Pull Protection**:
   - Monitors developer wallet activity
   - Detects dev selling in real-time
   - Auto-exits before major dumps
   - Tracks large holder movements
-- **🌙 Moonshot Strategy** (NEW):
+- **🌙 Moonshot Strategy**:
   - Keeps percentage of tokens for potential 10x+ gains
   - Automatically sells moonshot reserve when target reached
   - Maximizes profits on explosive moves
-- **💵 USDC Profit Management** (NEW):
+- **💵 USDC Profit Management**:
   - Auto-converts profits to USDC stablecoin
   - Monitors base currency (ETH/SOL/BNB/etc) for buying opportunities
   - Re-enters base currency during dips
   - Preserves profits and times market entries
+- **🌐 Multi-Wallet Multi-Chain Support** (NEW):
+  - Support for multiple wallets across different chains
+  - Auto-selects wallet with funds
+  - Works with ETH, BNB, MATIC, AVAX, FTM, Arbitrum, Optimism
+  - Chain-specific DEX routers and stablecoins
+- **🥷 Ninja Mode - Concurrent Operation** (NEW):
+  - Runs multiple wallets simultaneously in parallel
+  - Distributes trades across wallets to avoid detection
+  - Randomized delays and trade amounts for stealth
+  - Coordinated operation to prevent self-competition
+  - Makes bot undetectable to shady developers
 - **📊 Detailed Logging**: Complete transaction and profit/loss tracking
 
 ## Key Features Explained 🌟
@@ -88,6 +99,55 @@ Preserve and grow your profits intelligently:
 5. Bot converts USDC back to ETH at lower price
 6. You now have more ETH than you started with!
 
+### 5. Multi-Wallet Multi-Chain Support 🌐
+
+Operate across multiple wallets and blockchains:
+
+- **Multiple Wallets**: Configure as many wallets as you want
+- **Multi-Chain**: Supports Ethereum, BSC, Polygon, Avalanche, Fantom, Arbitrum, Optimism
+- **Auto-Selection**: Automatically selects wallet with funds
+- **Chain-Specific**: Uses correct DEX routers and stablecoins for each chain
+- **Flexible Funding**: Works with base currency (ETH/BNB/etc) or stablecoin (USDC) funding
+
+**Supported Chains:**
+- Ethereum (ETH) - Uniswap V2
+- Binance Smart Chain (BNB) - PancakeSwap
+- Polygon (MATIC) - QuickSwap
+- Avalanche (AVAX) - TraderJoe
+- Fantom (FTM) - SpookySwap
+- Arbitrum (ETH) - SushiSwap
+- Optimism (ETH) - Velodrome
+
+### 6. Ninja Mode - Stealth Operation 🥷
+
+**The ultimate anti-detection feature** - Operate multiple wallets simultaneously:
+
+- **Concurrent Operation**: Runs multiple wallet instances in parallel threads
+- **Stealth Distribution**: Distributes trades across wallets to avoid patterns
+- **Randomization**: Randomizes delays (1-5s) and trade amounts (±10%)
+- **Smart Coordination**: Prevents wallets from competing with each other
+- **Load Balancing**: Distributes positions across wallets (max 5 per wallet)
+- **Time-Based Logic**: Avoids rapid-fire trades from same wallet
+- **Undetectable**: Makes it nearly impossible for shady devs to identify bot activity
+
+**How Ninja Mode Works:**
+1. Bot creates separate instance for each wallet
+2. Each instance runs independently in its own thread
+3. Orchestrator coordinates token discovery (no duplicate scanning)
+4. When new token found, selects best wallet for trade
+5. Selection uses weighted randomization based on:
+   - Current position count (prefer less loaded wallets)
+   - Time since last trade (avoid rapid trades from same wallet)
+   - Random factor (unpredictable behavior)
+6. Applies stealth delay (1-5s random)
+7. Randomizes trade amount (±10% variation)
+8. Each wallet monitors its own positions independently
+
+**Why This Matters:**
+- **Single wallet pattern**: Dev can see repeated buys from same address → DETECTED
+- **Ninja mode**: Buys come from different addresses at random intervals → INVISIBLE
+- **Result**: You can trade while shady devs can't identify or block you
+
 This approach:
 - ✅ Maximizes your profits by avoiding price crashes
 - ✅ Protects you from rug pulls
@@ -122,20 +182,57 @@ cp config.example.json config.json
 
 Edit `config.json` with your specific settings:
 
-### Network Settings
+### Multi-Wallet Configuration (NEW!)
 ```json
-"network": {
-  "rpc_url": "YOUR_RPC_URL",           // Ethereum/BSC RPC endpoint
-  "chain_id": 1,                        // 1 for Ethereum, 56 for BSC
-  "dex_router": "0x7a25..."            // Uniswap/PancakeSwap router
+"wallets": [
+  {
+    "name": "Ethereum Wallet",
+    "rpc_url": "https://mainnet.infura.io/v3/YOUR_KEY",
+    "chain_id": 1,
+    "private_key": "YOUR_PRIVATE_KEY_HERE"
+  },
+  {
+    "name": "BSC Wallet",
+    "rpc_url": "https://bsc-dataseed.binance.org/",
+    "chain_id": 56,
+    "private_key": "YOUR_PRIVATE_KEY_HERE"
+  },
+  {
+    "name": "Polygon Wallet",
+    "rpc_url": "https://polygon-rpc.com/",
+    "chain_id": 137,
+    "private_key": "YOUR_PRIVATE_KEY_HERE"
+  }
+]
+```
+
+**Important Notes:**
+- You can add as many wallets as you want
+- Each wallet can be on a different chain
+- You can use the SAME private key for all chains (one wallet, multiple chains)
+- Or use DIFFERENT private keys for different chains (multiple wallets)
+- Bot auto-selects wallet with funds
+- Works with base currency (ETH/BNB) OR stablecoin (USDC) funding
+
+### Wallet Selection Settings
+```json
+"wallet_selection": {
+  "auto_select_funded": true,        // Auto-select wallet with funds
+  "min_balance_usd": 10,             // Minimum $10 to be considered funded
+  "prefer_chain_id": null            // Prefer specific chain (null = any)
 }
 ```
 
-### Wallet Settings
+### Ninja Mode Settings (NEW!)
 ```json
-"wallet": {
-  "private_key": "YOUR_PRIVATE_KEY",   // Your wallet private key
-  "address": "0xYour..."                // Your wallet address
+"ninja_mode": {
+  "enabled": true,                   // Enable concurrent multi-wallet operation
+  "max_positions_per_wallet": 5,     // Max positions per wallet
+  "stealth_delay_min_seconds": 1,    // Min delay before trade
+  "stealth_delay_max_seconds": 5,    // Max delay before trade
+  "randomize_amounts": true,         // Randomize trade amounts
+  "amount_variation_percent": 10,    // ±10% amount variation
+  "coordinate_wallets": true         // Coordinate between wallets
 }
 ```
 
@@ -207,10 +304,81 @@ Edit `config.json` with your specific settings:
 
 ## Usage 🚀
 
-Run the bot:
+### Standard Mode (Single Wallet Selected)
+Run the bot with automatic wallet selection:
 ```bash
 python scalper_bot.py
 ```
+
+The bot will:
+1. Connect to all configured wallets
+2. Check balances on all chains
+3. Auto-select the wallet with most funds
+4. Start trading on that chain
+
+### Ninja Mode (Multi-Wallet Concurrent) 🥷
+Run the orchestrator for stealth operation:
+```bash
+python ninja_bot_orchestrator.py
+```
+
+The ninja bot will:
+1. Create separate bot instance for each wallet
+2. Run all instances concurrently in parallel threads
+3. Coordinate token discovery across instances
+4. Distribute trades across wallets using stealth logic
+5. Randomize delays and amounts to avoid detection
+6. Monitor all positions across all wallets
+
+**Ninja Mode Output:**
+```
+🥷 Ninja Bot Orchestrator initialized
+Creating 3 bot instances...
+✅ Connected to Ethereum wallet: 0x1234...
+   Balance: 1.5000 ETH, $500.00 USDC
+✅ Connected to BSC wallet: 0x5678...
+   Balance: 5.2000 BNB, $200.00 USDC
+✅ Connected to Polygon wallet: 0x9abc...
+   Balance: 1000.0000 MATIC, $100.00 USDC
+
+🚀 Starting all bot instances...
+✅ Started 3 bot instances
+
+🎯 Selected wallet Ethereum:0x1234... for trade
+🕐 Stealth delay: 3.47s
+📍 New token discovered: 0xToken...
+✅ Successfully bought 1000.52 tokens at 0.00001 ETH
+
+================================================================================
+🥷 NINJA BOT STATUS
+Total Instances: 3
+Running: 3
+Total Positions: 5
+--------------------------------------------------------------------------------
+📍 Ethereum:0x1234...
+   Chain: Ethereum | Status: running
+   Positions: 2 | Balance: 1.4500 ETH
+📍 BSC:0x5678...
+   Chain: Binance Smart Chain | Status: running
+   Positions: 2 | Balance: 5.1000 BNB
+📍 Polygon:0x9abc...
+   Chain: Polygon | Status: running
+   Positions: 1 | Balance: 995.0000 MATIC
+================================================================================
+```
+
+### Which Mode to Use?
+
+**Use Standard Mode if:**
+- You have one wallet or want to trade on one chain
+- You're just getting started
+- You want simpler operation
+
+**Use Ninja Mode if:**
+- You have multiple wallets funded
+- You want to avoid detection by shady devs
+- You want maximum stealth and distribution
+- You can handle more complexity
 
 The bot will:
 1. Connect to the blockchain

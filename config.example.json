@@ -1,12 +1,31 @@
 {
-  "network": {
-    "rpc_url": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
-    "chain_id": 1,
-    "dex_router": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+  "wallets": [
+    {
+      "name": "Ethereum Wallet",
+      "rpc_url": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
+      "chain_id": 1,
+      "private_key": "YOUR_PRIVATE_KEY_HERE"
+    },
+    {
+      "name": "BSC Wallet",
+      "rpc_url": "https://bsc-dataseed.binance.org/",
+      "chain_id": 56,
+      "private_key": "YOUR_PRIVATE_KEY_HERE"
+    }
+  ],
+  "wallet_selection": {
+    "auto_select_funded": true,
+    "min_balance_usd": 10,
+    "prefer_chain_id": null
   },
-  "wallet": {
-    "private_key": "YOUR_PRIVATE_KEY_HERE",
-    "address": "0xYourWalletAddress"
+  "ninja_mode": {
+    "enabled": true,
+    "max_positions_per_wallet": 5,
+    "stealth_delay_min_seconds": 1,
+    "stealth_delay_max_seconds": 5,
+    "randomize_amounts": true,
+    "amount_variation_percent": 10,
+    "coordinate_wallets": true
   },
   "trading": {
     "buy_amount_eth": 0.1,
@@ -38,7 +57,8 @@
     "buy_base_below_avg_percent": 5,
     "base_buyback_percent": 30,
     "min_usdc_for_conversion": 100,
-    "max_usdc_per_conversion": 1000
+    "max_usdc_per_conversion": 1000,
+    "prefer_stablecoin": "usdc"
   },
   "monitoring": {
     "scan_interval_seconds": 2,

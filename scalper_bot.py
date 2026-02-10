@@ -2,6 +2,7 @@
 Token Scalper Bot - Main Module
 Monitors for new token launches and executes profitable trades with responsible selling
 Includes rug pull protection, moonshot position retention, and USDC profit conversion
+Supports multiple wallets across different chains
 """
 
 import json
@@ -13,6 +14,7 @@ from web3 import Web3
 from decimal import Decimal
 from wallet_monitor import WalletMonitor
 from profit_manager import ProfitManager
+from multi_wallet_manager import MultiWalletManager
 
 # Configure logging
 logging.basicConfig(
@@ -32,7 +34,25 @@ class TokenScalper:
     def __init__(self, config_path: str = 'config.json'):
         """Initialize the token scalper bot"""
         self.config = self._load_config(config_path)
-        self.w3 = self._initialize_web3()
+        
+        # Initialize multi-wallet support
+        self.multi_wallet_manager = None
+        self.w3 = None
+        self.active_wallet_info = None
+        
+        # Check config format and initialize accordingly
+        if 'wallets' in self.config:
+            # New multi-wallet configuration
+            self._initialize_multi_wallet()
+        elif 'network' in self.config and 'wallet' in self.config:
+            # Legacy single wallet configuration - convert it
+            logger.info("Detected legacy config format, converting to multi-wallet")
+            self._convert_legacy_config()
+            self._initialize_multi_wallet()
+        else:
+            raise ValueError("Invalid configuration format")
+        
+        # Initialize other components with active wallet
         self.wallet_monitor = WalletMonitor(self.w3, self.config)
         self.profit_manager = ProfitManager(self.w3, self.config)
         self.active_positions: Dict[str, Dict] = {}
@@ -42,6 +62,91 @@ class TokenScalper:
         logger.info("Token Scalper Bot initialized")
         logger.info("🛡️ Rug pull protection enabled" if self.config['rug_protection']['enable_dev_monitoring'] else "⚠️ Rug pull protection disabled")
         logger.info("💵 USDC profit conversion enabled" if self.config['profit_management']['auto_convert_to_usdc'] else "💰 Keeping profits in base currency")
+        
+    def _convert_legacy_config(self):
+        """Convert legacy single-wallet config to multi-wallet format"""
+        legacy_network = self.config.pop('network', {})
+        legacy_wallet = self.config.pop('wallet', {})
+        
+        # Create wallets list
+        self.config['wallets'] = [{
+            'name': f"Chain {legacy_network.get('chain_id', 1)} Wallet",
+            'rpc_url': legacy_network.get('rpc_url'),
+            'chain_id': legacy_network.get('chain_id', 1),
+            'private_key': legacy_wallet.get('private_key'),
+        }]
+        
+        # Add wallet selection config
+        self.config['wallet_selection'] = {
+            'auto_select_funded': True,
+            'min_balance_usd': 10,
+            'prefer_chain_id': None
+        }
+        
+        # Update profit management if needed
+        if 'profit_management' in self.config and 'prefer_stablecoin' not in self.config['profit_management']:
+            self.config['profit_management']['prefer_stablecoin'] = 'usdc'
+        
+    def _initialize_multi_wallet(self):
+        """Initialize multi-wallet manager and select active wallet"""
+        wallets_config = self.config.get('wallets', [])
+        
+        if not wallets_config:
+            raise ValueError("No wallets configured")
+            
+        # Initialize multi-wallet manager
+        self.multi_wallet_manager = MultiWalletManager(wallets_config, self.config)
+        
+        # Connect to all wallets
+        connected_wallets = self.multi_wallet_manager.connect_all_wallets()
+        
+        if not connected_wallets:
+            raise ConnectionError("Failed to connect to any wallet")
+            
+        # Select best wallet based on funding
+        auto_select = self.config.get('wallet_selection', {}).get('auto_select_funded', True)
+        selected_wallet = self.multi_wallet_manager.select_best_wallet(prefer_funded=auto_select)
+        
+        if not selected_wallet:
+            raise ValueError("No wallet could be selected")
+            
+        # Set active wallet connection
+        self.w3 = selected_wallet['w3']
+        self.active_wallet_info = selected_wallet
+        
+        logger.info(f"🌐 Active Chain: {selected_wallet['chain_name']}")
+        logger.info(f"💼 Active Wallet: {selected_wallet['address']}")
+        logger.info(f"💰 Balance: {selected_wallet['base_balance']:.4f} {selected_wallet['base_symbol']}")
+        logger.info(f"💵 USDC: ${selected_wallet['usdc_balance']:.2f}")
+        
+    def get_active_chain_config(self) -> Dict:
+        """Get configuration for the active chain"""
+        if self.active_wallet_info:
+            return self.active_wallet_info['chain_config']
+        return {}
+        
+    def get_dex_router_address(self) -> str:
+        """Get DEX router address for active chain"""
+        chain_config = self.get_active_chain_config()
+        return chain_config.get('dex_router', '0x0000000000000000000000000000000000000000')
+        
+    def get_stablecoin_address(self, prefer: str = 'usdc') -> str:
+        """Get stablecoin address for active chain"""
+        chain_config = self.get_active_chain_config()
+        
+        prefer = self.config.get('profit_management', {}).get('prefer_stablecoin', 'usdc')
+        
+        # Try to get preferred stablecoin
+        address_key = f"{prefer}_address"
+        if address_key in chain_config:
+            return chain_config[address_key]
+            
+        # Fallback to any available stablecoin
+        for key in ['usdc_address', 'usdt_address', 'dai_address', 'busd_address']:
+            if key in chain_config:
+                return chain_config[key]
+                
+        return '0x0000000000000000000000000000000000000000'
         
     def _load_config(self, config_path: str) -> Dict:
         """Load configuration from JSON file"""
@@ -56,18 +161,6 @@ class TokenScalper:
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in config file: {e}")
             raise
-            
-    def _initialize_web3(self) -> Web3:
-        """Initialize Web3 connection"""
-        rpc_url = self.config['network']['rpc_url']
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        
-        if not w3.is_connected():
-            logger.error("Failed to connect to blockchain")
-            raise ConnectionError("Cannot connect to RPC endpoint")
-            
-        logger.info(f"Connected to blockchain, Chain ID: {w3.eth.chain_id}")
-        return w3
         
     def scan_for_new_launches(self) -> List[str]:
         """
