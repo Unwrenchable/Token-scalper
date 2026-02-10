@@ -1,0 +1,60 @@
+{
+  "wallets": [],
+  "wallet_selection": {
+    "auto_select_funded": true,
+    "min_balance_usd": 10,
+    "prefer_chain_id": null
+  },
+  "ninja_mode": {
+    "enabled": true,
+    "max_positions_per_wallet": 5,
+    "stealth_delay_min_seconds": 1,
+    "stealth_delay_max_seconds": 5,
+    "randomize_amounts": true,
+    "amount_variation_percent": 10,
+    "coordinate_wallets": true
+  },
+  "trading": {
+    "buy_amount_eth": 0.1,
+    "min_liquidity_eth": 5,
+    "max_buy_tax": 10,
+    "max_sell_tax": 10,
+    "profit_target_percent": 50,
+    "stop_loss_percent": 30,
+    "max_slippage_percent": 15
+  },
+  "selling": {
+    "sell_chunks": 5,
+    "chunk_delay_seconds": 30,
+    "max_sell_impact_percent": 5,
+    "keep_percentage_for_moonshot": 20,
+    "moonshot_multiplier": 10
+  },
+  "rug_protection": {
+    "enable_dev_monitoring": true,
+    "dev_sell_threshold_percent": 10,
+    "large_sell_threshold_percent": 5,
+    "max_large_sells_before_exit": 3,
+    "monitor_interval_seconds": 10
+  },
+  "profit_management": {
+    "auto_convert_to_usdc": true,
+    "keep_base_currency_percent": 20,
+    "buy_base_dip_threshold_percent": 10,
+    "buy_base_below_avg_percent": 5,
+    "base_buyback_percent": 30,
+    "min_usdc_for_conversion": 100,
+    "max_usdc_per_conversion": 1000,
+    "prefer_stablecoin": "usdc"
+  },
+  "monitoring": {
+    "scan_interval_seconds": 2,
+    "min_holder_count": 10,
+    "blacklisted_tokens": []
+  },
+  "safety": {
+    "enable_honeypot_check": true,
+    "min_contract_age_seconds": 0,
+    "max_position_size_eth": 1.0
+  }
+}
