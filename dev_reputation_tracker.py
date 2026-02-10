@@ -5,7 +5,7 @@ Tracks developer wallets across projects and builds reputation scores
 
 import json
 import logging
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from datetime import datetime
 from pathlib import Path
 
