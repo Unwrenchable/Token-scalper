@@ -1,11 +1,37 @@
-# Token Scalper Bot 🚀🥷
+# Token Scalper Bot 🚀🥷🤖📊
 
 > **🔐 SECURITY NOTICE**: This bot now supports environment variables for storing sensitive data securely. **ALWAYS use `.env` files for private keys and RPC URLs.** Never commit sensitive data to Git!
 
-A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, and **ninja mode for stealth operation**.
+A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, **ninja mode for stealth operation**, **🤖 AI-powered token analysis**, **📊 real-time monitoring dashboard**, and **📱 social media integration**.
 
 ## Features ✨
 
+- **📊 Real-Time Monitoring Dashboard** (NEW):
+  - Web-based interface for live position tracking
+  - Analytics visualization (trades, profits, rug pulls avoided)
+  - Developer reputation tracking across projects
+  - Real-time alerts and notifications
+- **👥 Developer Reputation Tracking** (NEW):
+  - Track developers across multiple projects
+  - Automatic reputation scoring
+  - Flag scam developers and rug pulls
+  - Persistent developer database
+- **📱 Social Media Integration** (NEW):
+  - Auto-post alerts to Twitter about suspicious tokens
+  - Rug pull warnings to protect community
+  - High-potential token notifications
+  - Integration with overseer-bot-ai (atomicfizzcaps.xyz)
+- **🎯 Token Opportunity Scorer** (NEW):
+  - Multi-factor analysis (liquidity, safety, developer, sentiment)
+  - "Ape-worthy" token identification
+  - Configurable scoring weights
+  - Risk vs reward assessment
+- **🤖 AI-Powered Token Analysis** (NEW):
+  - Advanced risk assessment using AI (OpenAI GPT-4 or Anthropic Claude)
+  - Intelligent contract analysis to detect hidden threats
+  - Social sentiment analysis for market timing
+  - AI-enhanced trading recommendations
+  - Detects sophisticated scam patterns that traditional checks miss
 - **🔍 Automated Token Discovery**: Continuously scans blockchain for new token launches
 - **🛡️ Comprehensive Safety Checks**: 
   - Honeypot detection
@@ -13,6 +39,7 @@ A sophisticated cryptocurrency trading bot that monitors for new token launches,
   - Buy/sell tax analysis
   - Contract verification checking
   - Holder count validation
+  - **AI risk scoring** (optional)
 - **💰 Smart Buy Logic**: Automatically purchases tokens that meet safety criteria
 - **📈 Profit Monitoring**: Real-time tracking of profit/loss for all positions
 - **🎯 Intelligent Selling**: 
@@ -150,12 +177,59 @@ Operate across multiple wallets and blockchains:
 - **Ninja mode**: Buys come from different addresses at random intervals → INVISIBLE
 - **Result**: You can trade while shady devs can't identify or block you
 
+### 7. AI-Powered Token Analysis 🤖
+
+**The cutting-edge feature** - Use AI to analyze tokens before buying:
+
+- **Smart Contract Analysis**: AI examines contract code for hidden threats
+- **Risk Scoring**: Intelligent risk assessment (0-100) combining multiple factors
+- **Sentiment Analysis**: Evaluates social signals and community strength
+- **Pattern Detection**: Identifies sophisticated scam patterns that basic checks miss
+- **Trading Recommendations**: AI provides buy/avoid/monitor recommendations with confidence scores
+
+**How AI Analysis Works:**
+1. Token is discovered and passes basic safety checks
+2. Bot sends token data to AI API (OpenAI GPT-4 or Anthropic Claude)
+3. AI analyzes:
+   - Contract code patterns and potential vulnerabilities
+   - Token economics and distribution
+   - Social sentiment indicators
+   - Historical patterns of similar tokens
+4. AI provides:
+   - Risk score (0-100, lower is safer)
+   - Sentiment score (0-100, higher is more positive)
+   - Specific red flags or positive signals
+   - Buy/avoid/monitor recommendation
+5. Bot combines AI insights with traditional checks for final decision
+
+**What AI Can Detect:**
+- Hidden mint functions that could dilute holders
+- Complex rug pull mechanisms
+- Suspicious ownership patterns
+- Abnormal token distribution
+- Social engineering red flags
+- Community strength indicators
+- Hype vs substance analysis
+
+**AI Safety Integration:**
+- If AI risk score > 70: Token is rejected even if traditional checks pass
+- If AI recommends "avoid": Trade is skipped
+- AI warnings are logged for review
+- Works alongside traditional safety checks for defense in depth
+
+**Why This Matters:**
+- Traditional checks catch obvious scams
+- AI catches sophisticated, hidden threats
+- Better protection = more profit, fewer losses
+- Learn from AI insights to improve your strategy
+
 This approach:
 - ✅ Maximizes your profits by avoiding price crashes
 - ✅ Protects you from rug pulls
 - ✅ Captures moonshot opportunities
 - ✅ Preserves profits in stablecoin
 - ✅ Times base currency re-entries for compound gains
+- ✅ Detects sophisticated scams before you invest
 - ✅ Allows other traders to exit safely
 - ✅ Maintains healthy price action
 - ✅ Builds sustainable trading reputation
@@ -356,6 +430,53 @@ The `config.json` file should only contain non-sensitive trading parameters:
 }
 ```
 
+### AI Analysis Settings (NEW!) 🤖
+```json
+"ai_analysis": {
+  "enabled": false,                    // Enable AI-powered analysis
+  "provider": "openai",                // "openai" or "anthropic"
+  "model": "gpt-4",                    // Model to use (gpt-4, gpt-3.5-turbo, claude-3-opus, etc.)
+  "api_key": "",                       // API key (better to use .env: AI_API_KEY)
+  "max_tokens": 500,                   // Max tokens per AI response
+  "temperature": 0.3,                  // AI creativity (0.0-1.0, lower = more consistent)
+  "risk_threshold": 70,                // Reject tokens with AI risk score > 70
+  "min_sentiment_score": 40            // Minimum sentiment score to consider
+}
+```
+
+**Setting up AI Analysis:**
+
+1. **Get an API Key**:
+   - For OpenAI: Visit https://platform.openai.com/api-keys
+   - For Anthropic: Visit https://console.anthropic.com/
+
+2. **Add to .env file** (RECOMMENDED):
+   ```bash
+   AI_API_KEY="your_api_key_here"
+   ```
+   Note: Adding an API key to .env does NOT auto-enable AI. You must still set `"enabled": true` in config.json.
+
+3. **Enable in config.json**:
+   ```json
+   "ai_analysis": {
+     "enabled": true,
+     "provider": "openai",
+     "model": "gpt-4"
+   }
+   ```
+
+4. **Configure risk thresholds**:
+   - `risk_threshold`: Tokens with AI risk score above this are rejected (default: 70)
+   - `min_sentiment_score`: Minimum sentiment score to consider buying (default: 40)
+   - `temperature`: Controls AI creativity/consistency (0.0 = deterministic, 1.0 = creative, default: 0.3)
+
+**AI Cost Considerations:**
+- OpenAI GPT-4: ~$0.03-0.06 per token analysis
+- OpenAI GPT-3.5: ~$0.001-0.002 per token analysis (faster, cheaper, less accurate)
+- Anthropic Claude: ~$0.01-0.03 per token analysis
+- Costs are per token analyzed, so budget accordingly
+- AI analysis happens before buying, potentially saving you from bad investments
+
 ## Usage 🚀
 
 ### Standard Mode (Single Wallet Selected)
@@ -481,6 +602,7 @@ The bot will:
 
 The bot includes multiple safety mechanisms:
 
+- **AI-Powered Risk Assessment**: Advanced threat detection using machine learning (NEW! 🤖)
 - **Honeypot Detection**: Verifies tokens can be sold before buying
 - **Liquidity Checks**: Ensures sufficient liquidity exists
 - **Tax Analysis**: Validates buy/sell taxes are reasonable
@@ -490,6 +612,7 @@ The bot includes multiple safety mechanisms:
 - **Position Limits**: Caps maximum investment per token
 - **Dev Monitoring**: Tracks developer wallet activity (NEW!)
 - **Rug Pull Detection**: Exits before major dumps (NEW!)
+- **AI Sentiment Analysis**: Evaluates market sentiment and social signals (NEW! 🤖)
 
 ## Responsible Trading Philosophy 🌱
 
@@ -512,6 +635,8 @@ All activity is logged to:
 Log entries include:
 - Token discoveries
 - Safety check results
+- **AI analysis results** (NEW! 🤖)
+- **AI risk scores and recommendations** (NEW! 🤖)
 - Buy/sell transactions
 - **Dev wallet monitoring** (NEW!)
 - **Rug pull alerts** (NEW!)
@@ -526,10 +651,12 @@ Log entries include:
 The bot consists of several modules:
 
 - **`scalper_bot.py`**: Main bot logic and orchestration
-- **`safety_checker.py`**: Token safety analysis
+- **`safety_checker.py`**: Token safety analysis (AI-enhanced)
+- **`ai_analyzer.py`**: AI-powered token analysis and risk assessment (NEW! 🤖)
 - **`dex_trader.py`**: DEX trading operations
 - **`wallet_monitor.py`**: Dev wallet tracking and rug protection (NEW!)
 - **`profit_manager.py`**: USDC conversion and base currency timing (NEW!)
+- **`config_loader.py`**: Configuration loading with environment variable support
 - **`config.json`**: Configuration settings
 
 ## Example Scenarios 📖
@@ -612,21 +739,38 @@ For issues, questions, or suggestions:
 ## Roadmap 🗺️
 
 Future enhancements:
-- [ ] Web dashboard for monitoring
-- [ ] Telegram notifications for rug pull alerts
+- [x] **AI-powered token analysis** 🤖 (COMPLETED!)
+- [x] **Web dashboard for monitoring** 📊 (COMPLETED!)
+- [x] **Developer reputation tracking** 👥 (COMPLETED!)
+- [x] **Social media integration (Twitter)** 📱 (COMPLETED!)
+- [x] **Token opportunity scoring** 🎯 (COMPLETED!)
+- [ ] Telegram notifications for alerts
+- [ ] Discord webhook integration
+- [ ] Advanced AI models for price prediction
+- [ ] AI-based optimal exit timing
+- [ ] Machine learning from historical trades
 - [ ] Multi-DEX support
-- [ ] Advanced ML-based token analysis
 - [ ] Backtesting framework
 - [ ] Portfolio management
 - [ ] Gas optimization
-- [ ] Multi-chain support
+
+---
+
+## 📚 Additional Documentation
+
+- **[Monitoring & Analytics Guide](MONITORING_GUIDE.md)** - Complete guide for dashboard, developer tracking, and social media integration
+- **[Security Setup Guide](SECURITY_SETUP.md)** - Security best practices and setup instructions
 
 ---
 
 **Remember**: This bot's key features are:
-1. **Responsible selling** - Protects your profits AND the market health
-2. **Rug pull protection** - Exits before devs dump on you
-3. **Moonshot strategy** - Keeps some tokens for explosive gains
-4. **USDC profit management** - Preserves profits and times market re-entries
+1. **Real-time monitoring** - Track everything with live dashboard 📊
+2. **Developer tracking** - Identify scam developers before you invest 👥
+3. **Social alerts** - Warn community about rug pulls and find gems 📱
+4. **AI-powered analysis** - Advanced threat detection and risk assessment 🤖
+5. **Responsible selling** - Protects your profits AND the market health
+6. **Rug pull protection** - Exits before devs dump on you
+7. **Moonshot strategy** - Keeps some tokens for explosive gains
+8. **USDC profit management** - Preserves profits and times market re-entries
 
-Trade smart, trade safe! 🎯🛡️🚀💵
+Trade smart, trade safe! 🎯🛡️🚀💵🤖📊

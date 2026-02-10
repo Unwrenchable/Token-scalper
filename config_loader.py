@@ -45,6 +45,9 @@ class ConfigLoader:
         # Override wallets with environment variables if present
         config = ConfigLoader._load_wallets_from_env(config)
         
+        # Override AI API key with environment variable if present
+        config = ConfigLoader._load_ai_config_from_env(config)
+        
         return config
         
     @staticmethod
@@ -102,6 +105,87 @@ class ConfigLoader:
         else:
             logger.error("❌ No wallets configured in environment variables or config.json")
             
+        return config
+        
+    @staticmethod
+    def _load_ai_config_from_env(config: Dict) -> Dict:
+        """
+        Load AI configuration from environment variables
+        
+        Environment variables:
+        AI_API_KEY - API key for OpenAI or Anthropic
+        """
+        ai_api_key = os.getenv("AI_API_KEY")
+        
+        if ai_api_key:
+            # Ensure ai_analysis config exists
+            if 'ai_analysis' not in config:
+                config['ai_analysis'] = {
+                    'enabled': False,
+                    'provider': 'openai',
+                    'model': 'gpt-4',
+                    'max_tokens': 500
+                }
+            
+            # Override API key from environment
+            config['ai_analysis']['api_key'] = ai_api_key
+            logger.info("🤖 AI API key loaded from environment variables (SECURE)")
+            
+            # Only auto-enable if explicitly not disabled in config
+            # If enabled is not set (None/missing), user must explicitly enable in config
+            if 'enabled' not in config['ai_analysis']:
+                logger.info("💡 AI API key found but AI is not enabled. Set 'enabled': true in config.json to activate AI analysis.")
+        elif 'ai_analysis' in config and config['ai_analysis'].get('api_key'):
+            logger.warning("⚠️ AI API key found in config.json (LESS SECURE)")
+            logger.warning("⚠️ Consider moving AI_API_KEY to .env file for better security")
+        
+        # Load social media credentials from environment
+        config = ConfigLoader._load_social_config_from_env(config)
+        
+        return config
+        
+    @staticmethod
+    def _load_social_config_from_env(config: Dict) -> Dict:
+        """
+        Load social media configuration from environment variables
+        
+        Environment variables:
+        TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+        OVERSEER_WEBHOOK_URL, OVERSEER_API_KEY
+        """
+        # Ensure social_media config exists
+        if 'social_media' not in config:
+            config['social_media'] = {
+                'enabled': False,
+                'twitter_enabled': False,
+                'overseer_bot_enabled': False
+            }
+        
+        # Twitter credentials
+        twitter_api_key = os.getenv("TWITTER_API_KEY")
+        twitter_api_secret = os.getenv("TWITTER_API_SECRET")
+        twitter_access_token = os.getenv("TWITTER_ACCESS_TOKEN")
+        twitter_access_secret = os.getenv("TWITTER_ACCESS_SECRET")
+        
+        if all([twitter_api_key, twitter_api_secret, twitter_access_token, twitter_access_secret]):
+            config['social_media']['twitter_api_key'] = twitter_api_key
+            config['social_media']['twitter_api_secret'] = twitter_api_secret
+            config['social_media']['twitter_access_token'] = twitter_access_token
+            config['social_media']['twitter_access_secret'] = twitter_access_secret
+            logger.info("🐦 Twitter credentials loaded from environment variables (SECURE)")
+        elif any([twitter_api_key, twitter_api_secret, twitter_access_token, twitter_access_secret]):
+            logger.warning("⚠️ Incomplete Twitter credentials in environment variables")
+        
+        # Overseer bot credentials
+        overseer_webhook = os.getenv("OVERSEER_WEBHOOK_URL")
+        overseer_api_key = os.getenv("OVERSEER_API_KEY")
+        
+        if overseer_webhook:
+            config['social_media']['overseer_webhook_url'] = overseer_webhook
+            if overseer_api_key:
+                config['social_media']['overseer_api_key'] = overseer_api_key
+            logger.info("🤖 Overseer bot credentials loaded from environment variables (SECURE)")
+        
         return config
         
     @staticmethod
