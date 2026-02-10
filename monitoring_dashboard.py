@@ -5,6 +5,7 @@ Real-time monitoring interface for wallet tracking and analytics
 
 from flask import Flask, render_template, jsonify, request
 import logging
+import os
 from typing import Dict, List
 from datetime import datetime, timedelta
 import json
@@ -13,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 # Create Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-this'
+# Load secret key from environment or generate a secure random one
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
 
 # Global state (in production, use Redis or database)
 dashboard_state = {

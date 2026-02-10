@@ -37,12 +37,26 @@ class TokenOpportunityScorer:
             'community': self.scorer_config.get('weight_community', 10)
         }
         
+        # Validate that at least some weights are non-zero
+        total_weight = sum(self.weights.values())
+        if total_weight == 0:
+            logger.warning("⚠️ All scoring weights are zero! Using default weights.")
+            self.weights = {
+                'liquidity': 20,
+                'safety': 25,
+                'developer': 20,
+                'sentiment': 15,
+                'technical': 10,
+                'community': 10
+            }
+        
         # Thresholds
         self.min_score_for_alert = self.scorer_config.get('min_score_for_alert', 75)
         self.excellent_score = self.scorer_config.get('excellent_score', 85)
         
         if self.enabled:
             logger.info("🎯 Token Opportunity Scorer initialized")
+            logger.info(f"   Weights: {self.weights}")
     
     def score_token(self, token_data: Dict, safety_results: Dict,
                    dev_reputation: Optional[Dict] = None,
