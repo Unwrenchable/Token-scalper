@@ -15,6 +15,7 @@ from decimal import Decimal
 from wallet_monitor import WalletMonitor
 from profit_manager import ProfitManager
 from multi_wallet_manager import MultiWalletManager
+from config_loader import load_config_with_env
 
 # Configure logging
 logging.basicConfig(
@@ -33,7 +34,8 @@ class TokenScalper:
     
     def __init__(self, config_path: str = 'config.json'):
         """Initialize the token scalper bot"""
-        self.config = self._load_config(config_path)
+        # Load config with environment variable support
+        self.config = load_config_with_env(config_path)
         
         # Initialize multi-wallet support
         self.multi_wallet_manager = None
@@ -155,20 +157,6 @@ class TokenScalper:
                 return chain_config[key]
                 
         return '0x0000000000000000000000000000000000000000'
-        
-    def _load_config(self, config_path: str) -> Dict:
-        """Load configuration from JSON file"""
-        try:
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-            logger.info(f"Configuration loaded from {config_path}")
-            return config
-        except FileNotFoundError:
-            logger.error(f"Config file not found: {config_path}")
-            raise
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in config file: {e}")
-            raise
         
     def scan_for_new_launches(self) -> List[str]:
         """

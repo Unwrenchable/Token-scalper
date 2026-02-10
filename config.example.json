@@ -1,18 +1,5 @@
 {
-  "wallets": [
-    {
-      "name": "Ethereum Wallet",
-      "rpc_url": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
-      "chain_id": 1,
-      "private_key": "YOUR_PRIVATE_KEY_HERE"
-    },
-    {
-      "name": "BSC Wallet",
-      "rpc_url": "https://bsc-dataseed.binance.org/",
-      "chain_id": 56,
-      "private_key": "YOUR_PRIVATE_KEY_HERE"
-    }
-  ],
+  "wallets": [],
   "wallet_selection": {
     "auto_select_funded": true,
     "min_balance_usd": 10,

@@ -1,5 +1,7 @@
 # Token Scalper Bot 🚀🥷
 
+> **🔐 SECURITY NOTICE**: This bot now supports environment variables for storing sensitive data securely. **ALWAYS use `.env` files for private keys and RPC URLs.** Never commit sensitive data to Git!
+
 A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, and **ninja mode for stealth operation**.
 
 ## Features ✨
@@ -171,18 +173,70 @@ cd Token-scalper
 pip install -r requirements.txt
 ```
 
-3. Configure the bot:
+3. **🔐 Configure wallets securely (IMPORTANT for safety):**
 ```bash
-cp config.example.json config.json
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your actual values
+nano .env  # or use your preferred editor
 ```
 
-4. Edit `config.json` with your settings (see Configuration section below)
+4. Configure bot settings:
+```bash
+cp config.example.json config.json
+# Edit config.json for trading parameters (NOT for sensitive data)
+```
 
 ## Configuration ⚙️
 
-Edit `config.json` with your specific settings:
+### 🔐 Security-First Configuration (NEW!)
 
-### Multi-Wallet Configuration (NEW!)
+**IMPORTANT**: For maximum security, store sensitive data in `.env` file, NOT in `config.json`!
+
+### Step 1: Configure Wallets in .env (Secure Method) ⭐ RECOMMENDED
+
+Edit your `.env` file with your actual wallet information:
+
+```bash
+# Wallet 1 - Ethereum
+WALLET_1_NAME="My Ethereum Wallet"
+WALLET_1_RPC_URL="https://mainnet.infura.io/v3/YOUR_ACTUAL_INFURA_KEY"
+WALLET_1_CHAIN_ID=1
+WALLET_1_PRIVATE_KEY="your_actual_private_key_here"
+
+# Wallet 2 - BSC (Optional)
+WALLET_2_NAME="My BSC Wallet"
+WALLET_2_RPC_URL="https://bsc-dataseed.binance.org/"
+WALLET_2_CHAIN_ID=56
+WALLET_2_PRIVATE_KEY="your_actual_private_key_here"
+
+# Add more wallets as needed (WALLET_3_, WALLET_4_, etc.)
+```
+
+**Why use .env?**
+- ✅ `.env` is in `.gitignore` - won't be committed to Git
+- ✅ Separates sensitive data from configuration
+- ✅ Industry standard for managing secrets
+- ✅ Easy to rotate keys without changing code
+- ✅ Can use different `.env` files for different environments
+
+**Security Best Practices:**
+- 🔒 **NEVER commit your .env file** to Git
+- 🔒 **NEVER share your private keys** with anyone
+- 🔒 **Use separate wallets** for bot trading (not your main wallet)
+- 🔒 **Keep backups** of your .env file in a secure location
+- 🔒 **Rotate keys regularly** if you suspect exposure
+- 🔒 **Use hardware wallets** or key management services in production
+
+### Step 2: Configure Trading Parameters in config.json
+
+The `config.json` file should only contain non-sensitive trading parameters:
+
+### Legacy: Multi-Wallet Configuration in config.json (Less Secure)
+
+⚠️ **NOT RECOMMENDED**: If you must use config.json for wallets (legacy mode):
+
 ```json
 "wallets": [
   {

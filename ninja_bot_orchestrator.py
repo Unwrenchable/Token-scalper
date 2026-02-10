@@ -10,6 +10,7 @@ import random
 from typing import Dict, List, Optional
 from datetime import datetime
 from scalper_bot import TokenScalper
+from config_loader import load_config_with_env
 
 logger = logging.getLogger(__name__)
 
@@ -318,10 +319,8 @@ class NinjaBotOrchestrator:
         logger.info("🥷 Starting Ninja Bot Orchestrator")
         logger.info("=" * 80)
         
-        # Load config
-        import json
-        with open(self.config_path, 'r') as f:
-            config = json.load(f)
+        # Load config with environment variable support
+        config = load_config_with_env(self.config_path)
             
         # Create bot instances
         self.create_bot_instances(config)
