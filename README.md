@@ -1,11 +1,31 @@
-# Token Scalper Bot 🚀🥷
+# Token Scalper Bot 🚀🥷🤖📊
 
 > **🔐 SECURITY NOTICE**: This bot now supports environment variables for storing sensitive data securely. **ALWAYS use `.env` files for private keys and RPC URLs.** Never commit sensitive data to Git!
 
-A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, **ninja mode for stealth operation**, and **🤖 AI-powered token analysis**.
+A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, **ninja mode for stealth operation**, **🤖 AI-powered token analysis**, **📊 real-time monitoring dashboard**, and **📱 social media integration**.
 
 ## Features ✨
 
+- **📊 Real-Time Monitoring Dashboard** (NEW):
+  - Web-based interface for live position tracking
+  - Analytics visualization (trades, profits, rug pulls avoided)
+  - Developer reputation tracking across projects
+  - Real-time alerts and notifications
+- **👥 Developer Reputation Tracking** (NEW):
+  - Track developers across multiple projects
+  - Automatic reputation scoring
+  - Flag scam developers and rug pulls
+  - Persistent developer database
+- **📱 Social Media Integration** (NEW):
+  - Auto-post alerts to Twitter about suspicious tokens
+  - Rug pull warnings to protect community
+  - High-potential token notifications
+  - Integration with overseer-bot-ai (atomicfizzcaps.xyz)
+- **🎯 Token Opportunity Scorer** (NEW):
+  - Multi-factor analysis (liquidity, safety, developer, sentiment)
+  - "Ape-worthy" token identification
+  - Configurable scoring weights
+  - Risk vs reward assessment
 - **🤖 AI-Powered Token Analysis** (NEW):
   - Advanced risk assessment using AI (OpenAI GPT-4 or Anthropic Claude)
   - Intelligent contract analysis to detect hidden threats
@@ -720,11 +740,15 @@ For issues, questions, or suggestions:
 
 Future enhancements:
 - [x] **AI-powered token analysis** 🤖 (COMPLETED!)
+- [x] **Web dashboard for monitoring** 📊 (COMPLETED!)
+- [x] **Developer reputation tracking** 👥 (COMPLETED!)
+- [x] **Social media integration (Twitter)** 📱 (COMPLETED!)
+- [x] **Token opportunity scoring** 🎯 (COMPLETED!)
+- [ ] Telegram notifications for alerts
+- [ ] Discord webhook integration
 - [ ] Advanced AI models for price prediction
 - [ ] AI-based optimal exit timing
 - [ ] Machine learning from historical trades
-- [ ] Web dashboard for monitoring
-- [ ] Telegram notifications for rug pull alerts and AI alerts
 - [ ] Multi-DEX support
 - [ ] Backtesting framework
 - [ ] Portfolio management
@@ -732,11 +756,21 @@ Future enhancements:
 
 ---
 
-**Remember**: This bot's key features are:
-1. **AI-powered analysis** - Advanced threat detection and risk assessment 🤖
-2. **Responsible selling** - Protects your profits AND the market health
-3. **Rug pull protection** - Exits before devs dump on you
-4. **Moonshot strategy** - Keeps some tokens for explosive gains
-5. **USDC profit management** - Preserves profits and times market re-entries
+## 📚 Additional Documentation
 
-Trade smart, trade safe! 🎯🛡️🚀💵🤖
+- **[Monitoring & Analytics Guide](MONITORING_GUIDE.md)** - Complete guide for dashboard, developer tracking, and social media integration
+- **[Security Setup Guide](SECURITY_SETUP.md)** - Security best practices and setup instructions
+
+---
+
+**Remember**: This bot's key features are:
+1. **Real-time monitoring** - Track everything with live dashboard 📊
+2. **Developer tracking** - Identify scam developers before you invest 👥
+3. **Social alerts** - Warn community about rug pulls and find gems 📱
+4. **AI-powered analysis** - Advanced threat detection and risk assessment 🤖
+5. **Responsible selling** - Protects your profits AND the market health
+6. **Rug pull protection** - Exits before devs dump on you
+7. **Moonshot strategy** - Keeps some tokens for explosive gains
+8. **USDC profit management** - Preserves profits and times market re-entries
+
+Trade smart, trade safe! 🎯🛡️🚀💵🤖📊
