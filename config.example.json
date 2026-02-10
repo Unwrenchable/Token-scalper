@@ -1,0 +1,44 @@
+{
+  "network": {
+    "rpc_url": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
+    "chain_id": 1,
+    "dex_router": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+  },
+  "wallet": {
+    "private_key": "YOUR_PRIVATE_KEY_HERE",
+    "address": "0xYourWalletAddress"
+  },
+  "trading": {
+    "buy_amount_eth": 0.1,
+    "min_liquidity_eth": 5,
+    "max_buy_tax": 10,
+    "max_sell_tax": 10,
+    "profit_target_percent": 50,
+    "stop_loss_percent": 30,
+    "max_slippage_percent": 15
+  },
+  "selling": {
+    "sell_chunks": 5,
+    "chunk_delay_seconds": 30,
+    "max_sell_impact_percent": 5,
+    "keep_percentage_for_moonshot": 20,
+    "moonshot_multiplier": 10
+  },
+  "rug_protection": {
+    "enable_dev_monitoring": true,
+    "dev_sell_threshold_percent": 10,
+    "large_sell_threshold_percent": 5,
+    "max_large_sells_before_exit": 3,
+    "monitor_interval_seconds": 10
+  },
+  "monitoring": {
+    "scan_interval_seconds": 2,
+    "min_holder_count": 10,
+    "blacklisted_tokens": []
+  },
+  "safety": {
+    "enable_honeypot_check": true,
+    "min_contract_age_seconds": 0,
+    "max_position_size_eth": 1.0
+  }
+}
