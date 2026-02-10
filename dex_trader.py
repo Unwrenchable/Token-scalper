@@ -114,9 +114,11 @@ class DexTrader:
             # 5. Wait for confirmation
             # 6. Return transaction details
             
+            # Mock transaction result for placeholder implementation
+            MOCK_TX_HASH = '0x' + '0' * 64  # Placeholder transaction hash
             result = {
                 'success': True,
-                'tx_hash': '0x' + '0' * 64,
+                'tx_hash': MOCK_TX_HASH,
                 'tokens_received': 0,
                 'eth_spent': eth_amount
             }
@@ -144,9 +146,11 @@ class DexTrader:
             # 6. Wait for confirmation
             # 7. Return transaction details
             
+            # Mock transaction result for placeholder implementation
+            MOCK_TX_HASH = '0x' + '0' * 64  # Placeholder transaction hash
             result = {
                 'success': True,
-                'tx_hash': '0x' + '0' * 64,
+                'tx_hash': MOCK_TX_HASH,
                 'eth_received': 0,
                 'tokens_sold': token_amount
             }

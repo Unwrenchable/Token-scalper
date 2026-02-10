@@ -153,7 +153,12 @@ class WalletMonitor:
                         })
                         result['total_sold_percent'] += decrease_percent
                         
-            # Determine urgency level
+            # Determine urgency level based on total sold percentage
+            # These thresholds are based on common rug pull patterns:
+            # - 50%+ indicates imminent rug (critical - exit immediately)
+            # - 30%+ indicates high risk (high - exit soon)
+            # - 15%+ indicates elevated risk (medium - reduce position)
+            # - 10%+ indicates initial concern (low - monitor closely)
             if result['dev_selling_detected']:
                 if result['total_sold_percent'] >= 50:
                     result['urgency'] = 'critical'

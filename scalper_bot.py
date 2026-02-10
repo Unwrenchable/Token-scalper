@@ -1,7 +1,7 @@
 """
 Token Scalper Bot - Main Module
 Monitors for new token launches and executes profitable trades with responsible selling
-Includes rug pull protection and moonshot position retention
+Includes rug pull protection, moonshot position retention, and USDC profit conversion
 """
 
 import json
@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 from web3 import Web3
 from decimal import Decimal
 from wallet_monitor import WalletMonitor
+from profit_manager import ProfitManager
 
 # Configure logging
 logging.basicConfig(
@@ -33,12 +34,14 @@ class TokenScalper:
         self.config = self._load_config(config_path)
         self.w3 = self._initialize_web3()
         self.wallet_monitor = WalletMonitor(self.w3, self.config)
+        self.profit_manager = ProfitManager(self.w3, self.config)
         self.active_positions: Dict[str, Dict] = {}
         self.monitored_tokens: List[str] = []
         self.blacklisted_tokens: set = set(self.config['monitoring']['blacklisted_tokens'])
         
         logger.info("Token Scalper Bot initialized")
         logger.info("🛡️ Rug pull protection enabled" if self.config['rug_protection']['enable_dev_monitoring'] else "⚠️ Rug pull protection disabled")
+        logger.info("💵 USDC profit conversion enabled" if self.config['profit_management']['auto_convert_to_usdc'] else "💰 Keeping profits in base currency")
         
     def _load_config(self, config_path: str) -> Dict:
         """Load configuration from JSON file"""
@@ -218,7 +221,8 @@ class TokenScalper:
             # Placeholder - simulate price with some profit
             if token_address in self.active_positions:
                 entry_price = self.active_positions[token_address]['entry_price']
-                # Simulate 60% profit for demo
+                # DEMO: Simulate 60% profit for demonstration purposes
+                # In production, this would query actual DEX pair reserves
                 return entry_price * 1.6
                 
             return 0
@@ -356,6 +360,18 @@ class TokenScalper:
                 
                 logger.info(f"📊 Sold chunk {i+1}/{num_chunks}: {tokens_this_chunk:.2f} tokens for {eth_received:.6f} ETH")
                 
+                # Convert to USDC if enabled
+                if self.config['profit_management']['auto_convert_to_usdc']:
+                    # Keep a percentage in base currency
+                    keep_percent = self.config['profit_management']['keep_base_currency_percent']
+                    eth_to_keep = eth_received * (keep_percent / 100)
+                    eth_to_convert = eth_received - eth_to_keep
+                    
+                    if eth_to_convert > 0:
+                        conversion = self.profit_manager.convert_to_usdc(eth_to_convert, "profit_taking")
+                        if conversion.get('success'):
+                            logger.info(f"💵 Converted {eth_to_convert:.6f} ETH to {conversion['usdc_received']:.2f} USDC (kept {eth_to_keep:.6f} ETH)")
+                
                 # Wait between chunks to minimize market impact
                 if i < num_chunks - 1:
                     logger.info(f"Waiting {chunk_delay}s before next chunk...")
@@ -433,6 +449,17 @@ class TokenScalper:
             position['sold_amount'] += position['kept_for_moonshot']
             position['kept_for_moonshot'] = 0
             
+            # Convert moonshot profits to USDC if enabled
+            if self.config['profit_management']['auto_convert_to_usdc']:
+                keep_percent = self.config['profit_management']['keep_base_currency_percent']
+                eth_to_keep = eth_received * (keep_percent / 100)
+                eth_to_convert = eth_received - eth_to_keep
+                
+                if eth_to_convert > 0:
+                    conversion = self.profit_manager.convert_to_usdc(eth_to_convert, "moonshot_profit")
+                    if conversion.get('success'):
+                        logger.info(f"💵 Converted moonshot profit: {eth_to_convert:.6f} ETH to {conversion['usdc_received']:.2f} USDC")
+            
             # Calculate final profit
             profit_percent = (position['realized_profit'] / position['eth_invested']) * 100
             
@@ -483,15 +510,61 @@ class TokenScalper:
             except Exception as e:
                 logger.error(f"Error monitoring position {token_address}: {e}")
                 
+    def check_base_currency_opportunities(self):
+        """Check if it's a good time to buy base currency with USDC"""
+        if not self.config['profit_management']['auto_convert_to_usdc']:
+            return
+            
+        try:
+            should_convert, amount, reason = self.profit_manager.should_convert_to_base()
+            
+            if should_convert:
+                logger.info(f"💰 Good time to buy {self.profit_manager.get_base_currency_name()}: {reason}")
+                conversion = self.profit_manager.convert_to_base_currency(amount, reason)
+                
+                if conversion.get('success'):
+                    logger.info(f"✅ Bought back {conversion['base_received']:.6f} {conversion['base_currency']} with {amount:.2f} USDC")
+                    
+        except Exception as e:
+            logger.error(f"Error checking base currency opportunities: {e}")
+            
+    def display_profit_summary(self):
+        """Display summary of profit management status"""
+        if not self.config['profit_management']['auto_convert_to_usdc']:
+            return
+            
+        try:
+            summary = self.profit_manager.get_profit_summary()
+            
+            logger.info("=" * 60)
+            logger.info("💰 PROFIT MANAGEMENT SUMMARY")
+            logger.info(f"Base Currency: {summary['base_currency']}")
+            logger.info(f"Current {summary['base_currency']} Price: ${summary['current_base_price']:.2f}")
+            logger.info(f"Trend: {summary['base_currency_trend']['trend'].upper()} ({summary['base_currency_trend']['change_percent']:+.2f}%)")
+            logger.info(f"USDC Balance: ${summary['usdc_balance']:.2f}")
+            logger.info(f"Total Converted to USDC: ${summary['total_converted_to_usdc']:.2f}")
+            logger.info(f"Total Converted to {summary['base_currency']}: ${summary['total_converted_to_base']:.2f}")
+            logger.info("=" * 60)
+            
+        except Exception as e:
+            logger.error(f"Error displaying profit summary: {e}")
+                
     def run(self):
         """Main bot loop"""
         logger.info("🚀 Starting Token Scalper Bot")
         logger.info("=" * 60)
         
         scan_interval = self.config['monitoring']['scan_interval_seconds']
+        iteration_count = 0
         
         try:
             while True:
+                iteration_count += 1
+                
+                # Record base currency price for trend analysis
+                if self.config['profit_management']['auto_convert_to_usdc']:
+                    self.profit_manager.record_base_currency_price()
+                
                 # Scan for new launches
                 new_tokens = self.scan_for_new_launches()
                 
@@ -504,6 +577,14 @@ class TokenScalper:
                         
                 # Monitor existing positions
                 self.monitor_positions()
+                
+                # Check for base currency buying opportunities
+                if iteration_count % 5 == 0:  # Check every 5 iterations
+                    self.check_base_currency_opportunities()
+                    
+                # Display profit summary periodically
+                if iteration_count % 20 == 0:  # Display every 20 iterations
+                    self.display_profit_summary()
                 
                 # Wait before next scan
                 time.sleep(scan_interval)

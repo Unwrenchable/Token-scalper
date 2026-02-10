@@ -27,6 +27,11 @@ A sophisticated cryptocurrency trading bot that monitors for new token launches,
   - Keeps percentage of tokens for potential 10x+ gains
   - Automatically sells moonshot reserve when target reached
   - Maximizes profits on explosive moves
+- **💵 USDC Profit Management** (NEW):
+  - Auto-converts profits to USDC stablecoin
+  - Monitors base currency (ETH/SOL/BNB/etc) for buying opportunities
+  - Re-enters base currency during dips
+  - Preserves profits and times market entries
 - **📊 Detailed Logging**: Complete transaction and profit/loss tracking
 
 ## Key Features Explained 🌟
@@ -66,10 +71,29 @@ Don't miss out on massive gains:
 - **Automatic moonshot sale** when target reached
 - **No moonshot reserve on rug pulls** - sells everything for safety
 
+### 4. USDC Profit Management 💵
+
+Preserve and grow your profits intelligently:
+
+- **Auto-converts to USDC**: Automatically converts 80% of profits to USDC stablecoin (keeps 20% in base currency)
+- **Market Timing**: Monitors base currency (ETH, SOL, BNB, etc.) price movements
+- **Smart Re-entry**: Automatically buys back base currency during dips
+- **Profit Protection**: Locks in gains in stablecoin while waiting for optimal re-entry
+
+**How it works:**
+1. You sell tokens for 1 ETH profit
+2. Bot converts 0.8 ETH → USDC (keeps 0.2 ETH)
+3. Bot monitors ETH price ($3000 → $2700)
+4. ETH dips 10% - bot detects opportunity
+5. Bot converts USDC back to ETH at lower price
+6. You now have more ETH than you started with!
+
 This approach:
 - ✅ Maximizes your profits by avoiding price crashes
 - ✅ Protects you from rug pulls
 - ✅ Captures moonshot opportunities
+- ✅ Preserves profits in stablecoin
+- ✅ Times base currency re-entries for compound gains
 - ✅ Allows other traders to exit safely
 - ✅ Maintains healthy price action
 - ✅ Builds sustainable trading reputation
@@ -150,6 +174,19 @@ Edit `config.json` with your specific settings:
 }
 ```
 
+### USDC Profit Management Settings (NEW!)
+```json
+"profit_management": {
+  "auto_convert_to_usdc": true,           // Auto-convert profits to USDC
+  "keep_base_currency_percent": 20,       // Keep 20% in base currency
+  "buy_base_dip_threshold_percent": 10,   // Buy when dipped >10%
+  "buy_base_below_avg_percent": 5,        // Buy when 5% below avg
+  "base_buyback_percent": 30,             // Convert 30% of USDC per buy
+  "min_usdc_for_conversion": 100,         // Min $100 USDC to convert
+  "max_usdc_per_conversion": 1000         // Max $1000 per conversion
+}
+```
+
 ### Monitoring Settings
 ```json
 "monitoring": {
@@ -183,8 +220,11 @@ The bot will:
 5. **Start monitoring dev wallets** for rug pull signals
 6. Monitor positions for profit opportunities
 7. Sell responsibly when profit targets are hit
-8. **Keep a portion for moonshots** (unless rug pull detected)
-9. **Auto-exit if dev dumping detected**
+8. **Auto-convert profits to USDC** (keeps 20% in base currency)
+9. **Keep a portion for moonshots** (unless rug pull detected)
+10. **Auto-exit if dev dumping detected**
+11. **Monitor base currency for good re-entry points**
+12. **Buy back base currency during dips**
 
 ## How It Protects You 🛡️
 
@@ -207,6 +247,13 @@ The bot will:
 2. Token price increases 10x from entry
 3. Bot automatically sells moonshot reserve
 4. You capture massive additional gains
+
+### USDC Profit Management Scenario
+1. Bot sells tokens for 2 ETH profit at $3000/ETH = $6000
+2. Auto-converts 1.6 ETH to $4800 USDC (keeps 0.4 ETH)
+3. ETH price drops to $2700 (10% dip detected)
+4. Bot converts $1440 USDC → 0.533 ETH at lower price
+5. You now have 0.933 ETH (vs 0.4 ETH if you just held)
 
 ## Safety Features 🛡️
 
@@ -247,6 +294,8 @@ Log entries include:
 - **Dev wallet monitoring** (NEW!)
 - **Rug pull alerts** (NEW!)
 - **Moonshot tracking** (NEW!)
+- **USDC conversions** (NEW!)
+- **Base currency buy signals** (NEW!)
 - Profit/loss tracking
 - Error messages
 
@@ -258,6 +307,7 @@ The bot consists of several modules:
 - **`safety_checker.py`**: Token safety analysis
 - **`dex_trader.py`**: DEX trading operations
 - **`wallet_monitor.py`**: Dev wallet tracking and rug protection (NEW!)
+- **`profit_manager.py`**: USDC conversion and base currency timing (NEW!)
 - **`config.json`**: Configuration settings
 
 ## Example Scenarios 📖
@@ -355,5 +405,6 @@ Future enhancements:
 1. **Responsible selling** - Protects your profits AND the market health
 2. **Rug pull protection** - Exits before devs dump on you
 3. **Moonshot strategy** - Keeps some tokens for explosive gains
+4. **USDC profit management** - Preserves profits and times market re-entries
 
-Trade smart, trade safe! 🎯🛡️🚀
+Trade smart, trade safe! 🎯🛡️🚀💵
