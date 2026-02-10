@@ -75,6 +75,7 @@ class ConfigLoader:
                 break
                 
             # Validate required fields
+            address = os.getenv(f"{prefix}ADDRESS")
             if rpc_url and private_key:
                 wallet_config = {
                     'name': name or f"Wallet {wallet_index}",
@@ -82,6 +83,8 @@ class ConfigLoader:
                     'chain_id': int(chain_id) if chain_id else 1,
                     'private_key': private_key,
                 }
+                if address:
+                    wallet_config['address'] = address
                 env_wallets.append(wallet_config)
                 logger.info(f"✅ Loaded wallet {wallet_index} from environment variables")
             else:

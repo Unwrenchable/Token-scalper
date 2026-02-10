@@ -16,6 +16,7 @@ from wallet_monitor import WalletMonitor
 from profit_manager import ProfitManager
 from multi_wallet_manager import MultiWalletManager
 from config_loader import load_config_with_env
+from airdrop_finder import AirdropFinder
 
 # Configure logging
 logging.basicConfig(
@@ -31,33 +32,39 @@ logger = logging.getLogger(__name__)
 
 class TokenScalper:
     """Main bot class for token scalping operations"""
-    
     def __init__(self, config_path: str = 'config.json'):
         """Initialize the token scalper bot"""
         # Load config with environment variable support
         self.config = load_config_with_env(config_path)
-        
         # Initialize multi-wallet support
         self.multi_wallet_manager = None
         self.w3 = None
         self.active_wallet_info = None
-        
         # Check config format and initialize accordingly
         if 'wallets' in self.config:
-            # New multi-wallet configuration
             self._initialize_multi_wallet()
         elif 'network' in self.config and 'wallet' in self.config:
-            # Legacy single wallet configuration - convert it
             logger.info("Detected legacy config format, converting to multi-wallet")
             self._convert_legacy_config()
             self._initialize_multi_wallet()
         else:
             raise ValueError("Invalid configuration format")
-        
         # Initialize other components with active wallet
         self.wallet_monitor = WalletMonitor(self.w3, self.config)
         self.profit_manager = ProfitManager(self.w3, self.config)
         self.active_positions: Dict[str, Dict] = {}
+        # --- AIRDROP INTEGRATION ---
+        self.airdrop_finder = AirdropFinder()
+
+    def search_and_participate_airdrops(self):
+        """Search for good airdrops and participate with all wallets"""
+        airdrops = self.airdrop_finder.get_good_airdrops()
+        logger.info(f"Found {len(airdrops)} good airdrop opportunities.")
+        for wallet in self.config.get('wallets', []):
+            for airdrop in airdrops:
+                # Placeholder: implement actual participation logic per airdrop
+                logger.info(f"Wallet {wallet.get('name')} can participate in {airdrop.get('title', airdrop.get('name', 'unknown'))} at {airdrop.get('website')}")
+        return airdrops
         self.monitored_tokens: List[str] = []
         self.blacklisted_tokens: set = set(self.config['monitoring']['blacklisted_tokens'])
         

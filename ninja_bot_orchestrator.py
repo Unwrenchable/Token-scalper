@@ -10,6 +10,7 @@ import random
 from typing import Dict, List, Optional
 from datetime import datetime
 from scalper_bot import TokenScalper
+from airdrop_finder import AirdropFinder
 from config_loader import load_config_with_env
 
 logger = logging.getLogger(__name__)
@@ -45,19 +46,23 @@ class NinjaBotOrchestrator:
         
         for idx, wallet_config in enumerate(wallets_config):
             try:
-                # Create a temporary config for this wallet only
                 wallet_specific_config = config.copy()
                 wallet_specific_config['wallets'] = [wallet_config]
-                
-                # Save temporary config using tempfile for cross-platform compatibility
                 import tempfile
                 import json
                 temp_dir = tempfile.gettempdir()
                 temp_config_path = f'{temp_dir}/ninja_bot_config_{idx}.json'
                 with open(temp_config_path, 'w') as f:
                     json.dump(wallet_specific_config, f)
-                
                 # Create bot instance
+                    def search_airdrops_all_wallets(self):
+                        """Search for airdrops and print participation info for all wallets"""
+                        airdrop_finder = AirdropFinder()
+                        airdrops = airdrop_finder.get_good_airdrops()
+                        logger.info(f"[NinjaBot] Found {len(airdrops)} good airdrop opportunities.")
+                        for wallet in self.bot_instances:
+                            for airdrop in airdrops:
+                                logger.info(f"Wallet {wallet} can participate in {airdrop.get('title', airdrop.get('name', 'unknown'))} at {airdrop.get('website')}")
                 bot = TokenScalper(temp_config_path)
                 
                 wallet_id = f"{wallet_config.get('chain_id', 0)}:{bot.active_wallet_info['address'][:10]}"
