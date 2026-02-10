@@ -8,6 +8,9 @@ from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
+# Placeholder transaction hash for mock implementations
+MOCK_TX_HASH = '0x' + '0' * 64
+
 
 class DexTrader:
     """Handles DEX trading operations"""
@@ -115,7 +118,6 @@ class DexTrader:
             # 6. Return transaction details
             
             # Mock transaction result for placeholder implementation
-            MOCK_TX_HASH = '0x' + '0' * 64  # Placeholder transaction hash
             result = {
                 'success': True,
                 'tx_hash': MOCK_TX_HASH,
@@ -147,7 +149,6 @@ class DexTrader:
             # 7. Return transaction details
             
             # Mock transaction result for placeholder implementation
-            MOCK_TX_HASH = '0x' + '0' * 64  # Placeholder transaction hash
             result = {
                 'success': True,
                 'tx_hash': MOCK_TX_HASH,
