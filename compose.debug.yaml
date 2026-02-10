@@ -1,0 +1,6 @@
+services:
+  tokenscalper:
+    image: tokenscalper
+    build:
+      context: .
+      dockerfile: ./Dockerfile

@@ -17,6 +17,7 @@ from profit_manager import ProfitManager
 from multi_wallet_manager import MultiWalletManager
 from config_loader import load_config_with_env
 from airdrop_finder import AirdropFinder
+from webhook_sender import send_alert_to_webhooks
 
 # Configure logging
 logging.basicConfig(
@@ -212,6 +213,17 @@ class TokenScalper:
             # Check if token is blacklisted
             if token_address.lower() in self.blacklisted_tokens:
                 logger.warning(f"Token {token_address} is blacklisted")
+                # Send alert for blacklisted token
+                alert = {
+                    "alert_type": "blacklisted_token",
+                    "token_symbol": token_address,
+                    "token_address": token_address,
+                    "severity": "critical",
+                    "details": "Token is blacklisted.",
+                    "detected_by": "Token-scalper",
+                    "timestamp": datetime.utcnow().isoformat() + "Z"
+                }
+                send_alert_to_webhooks(alert)
                 return analysis
                 
             # In a real implementation, this would:
@@ -236,6 +248,17 @@ class TokenScalper:
         Determine if token should be bought based on analysis
         """
         if not analysis['safe']:
+            # Send alert for unsafe token
+            alert = {
+                "alert_type": "unsafe_token",
+                "token_symbol": analysis.get('address', ''),
+                "token_address": analysis.get('address', ''),
+                "severity": "warning",
+                "details": "Token failed safety checks.",
+                "detected_by": "Token-scalper",
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            }
+            send_alert_to_webhooks(alert)
             return False
             
         # Check minimum liquidity
@@ -259,6 +282,17 @@ class TokenScalper:
         # Check if honeypot
         if analysis['is_honeypot']:
             logger.warning(f"Token {analysis['address']} appears to be a honeypot")
+            # Send alert for honeypot
+            alert = {
+                "alert_type": "honeypot",
+                "token_symbol": analysis.get('address', ''),
+                "token_address": analysis.get('address', ''),
+                "severity": "critical",
+                "details": "Token appears to be a honeypot.",
+                "detected_by": "Token-scalper",
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            }
+            send_alert_to_webhooks(alert)
             return False
             
         return True
@@ -364,6 +398,17 @@ class TokenScalper:
             should_exit, rug_reason = self.wallet_monitor.should_exit_position(token_address)
             if should_exit:
                 logger.error(f"🚨 RUG PULL RISK: {rug_reason}")
+                # Send alert for rug pull
+                alert = {
+                    "alert_type": "rug_pull",
+                    "token_symbol": token_address,
+                    "token_address": token_address,
+                    "severity": "critical",
+                    "details": f"Rug pull risk detected: {rug_reason}",
+                    "detected_by": "Token-scalper",
+                    "timestamp": datetime.utcnow().isoformat() + "Z"
+                }
+                send_alert_to_webhooks(alert)
                 return True, f"rug_protection: {rug_reason}"
         
         # Check profit target

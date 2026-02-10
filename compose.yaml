@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  token-scalper:
+    build:
+      context: ./
+    container_name: token-scalper
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    command: ["python", "scalper_bot.py"]
+
+  overseer-bot-ai:
+    build:
+      context: ../overseer-bot-ai
+    container_name: overseer-bot-ai
+    env_file:
+      - ../overseer-bot-ai/.env
+    restart: unless-stopped
+    volumes:
+      - ../overseer-bot-ai:/app
+    command: ["python", "overseer_bot.py"]
+    ports:
+      - "5000:5000"  # Expose dashboard/API if needed
+
+  overseer-bot-ui:
+    build:
+      context: ../overseer-bot-ui
+    container_name: overseer-bot-ui
+    env_file:
+      - ../overseer-bot-ui/.env
+    restart: unless-stopped
+    volumes:
+      - ../overseer-bot-ui:/app
+    command: ["python", "overseer_bot.py"]
+    ports:
+      - "6000:5000"  # Expose dashboard/UI on a different host port
