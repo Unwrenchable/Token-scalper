@@ -12,6 +12,7 @@ from dev_reputation_tracker import DevReputationTracker
 from social_media_alerts import SocialMediaAlerts
 from monitoring_dashboard import MonitoringDashboard, dashboard_state
 from token_opportunity_scorer import TokenOpportunityScorer
+from ecosystem_integration import EcosystemIntegration, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class EnhancedBotOrchestrator:
     - Social media alerts
     - Monitoring dashboard
     - Token opportunity scoring
+    - Ecosystem integration
     """
     
     def __init__(self, bot_instance, config: Dict):
@@ -42,6 +44,9 @@ class EnhancedBotOrchestrator:
         self.opportunity_scorer = TokenOpportunityScorer(config)
         self.dashboard = MonitoringDashboard(config, self.dev_tracker, self.social_alerts)
         
+        # Initialize ecosystem integration
+        self.ecosystem = EcosystemIntegration(config)
+        
         # Dashboard thread
         self.dashboard_thread = None
         
@@ -50,6 +55,7 @@ class EnhancedBotOrchestrator:
         logger.info(f"   - Social Alerts: {'✅' if self.social_alerts.enabled else '❌'}")
         logger.info(f"   - Opportunity Scorer: {'✅' if self.opportunity_scorer.enabled else '❌'}")
         logger.info(f"   - Dashboard: {'✅' if self.dashboard.enabled else '❌'}")
+        logger.info(f"   - Ecosystem Integration: {'✅' if self.ecosystem.enabled else '❌'}")
     
     def start_dashboard(self):
         """Start the monitoring dashboard in a separate thread"""
@@ -150,6 +156,16 @@ class EnhancedBotOrchestrator:
                 token_address, token_name, dev_address, severity, details
             )
         
+        # Broadcast to ecosystem
+        if self.ecosystem.enabled:
+            self.ecosystem.send_token_alert(
+                token_address, token_name, 'rug_pull', severity,
+                {
+                    'dev_address': dev_address,
+                    'description': details
+                }
+            )
+        
         # Update dashboard
         self.dashboard.add_alert('rug_pull', f"Rug pull: {token_name}", 'danger')
         
@@ -181,13 +197,29 @@ class EnhancedBotOrchestrator:
                                    f"Developer sold {amount_percent}% of {token_address}", 
                                    'warning')
     
-    def record_successful_trade(self, token_address: str, profit_usd: float):
-        """Record a successful trade"""
+    def record_successful_trade(self, token_address: str, profit_usd: float, 
+                               trade_type: str = 'sell', wallet_address: str = ''):
+        """
+        Record a successful trade
+        
+        Args:
+            token_address: Token contract address
+            profit_usd: Profit in USD
+            trade_type: Type of trade (buy/sell)
+            wallet_address: Wallet address used
+        """
         stats = dashboard_state['analytics']
         stats['total_trades'] = stats.get('total_trades', 0) + 1
         stats['successful_trades'] = stats.get('successful_trades', 0) + 1
         stats['total_profit_usd'] = stats.get('total_profit_usd', 0) + profit_usd
         self.dashboard.update_analytics(stats)
+        
+        # Broadcast to ecosystem
+        if self.ecosystem.enabled and trade_type == 'sell' and profit_usd > 0:
+            self.ecosystem.send_trade_notification(
+                trade_type, token_address, 'Unknown', 
+                profit_usd, 0, wallet_address
+            )
     
     def _identify_developers(self, token_address: str) -> List[str]:
         """
@@ -244,5 +276,34 @@ class EnhancedBotOrchestrator:
             'developer_tracking': self.dev_tracker.get_statistics(),
             'analytics': dashboard_state['analytics'],
             'social_alerts_enabled': self.social_alerts.enabled,
-            'dashboard_enabled': self.dashboard.enabled
+            'dashboard_enabled': self.dashboard.enabled,
+            'ecosystem_enabled': self.ecosystem.enabled
         }
+    
+    def send_heartbeat(self, uptime_seconds: int = 0):
+        """
+        Send periodic heartbeat to ecosystem
+        
+        Args:
+            uptime_seconds: Bot uptime in seconds
+        """
+        if not self.ecosystem.enabled:
+            return
+        
+        stats = dashboard_state['analytics']
+        status_data = {
+            'status': 'online',
+            'uptime_seconds': uptime_seconds,
+            'active_positions': len(dashboard_state['active_positions']),
+            'total_trades': stats.get('total_trades', 0),
+            'wallet_count': len(self.config.get('wallets', [])),
+            'last_action': 'monitoring',
+            'health_metrics': {
+                'rpc_healthy': True,
+                'wallet_balance': 'unknown',
+                'memory_usage_mb': 0
+            }
+        }
+        
+        self.ecosystem.send_heartbeat(status_data)
+        logger.debug("💓 Heartbeat sent to ecosystem")

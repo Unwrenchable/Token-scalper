@@ -118,5 +118,26 @@
     "weight_community": 10,
     "min_score_for_alert": 75,
     "excellent_score": 85
+  },
+  "ecosystem": {
+    "enabled": false,
+    "bot_id": "token-scalper-001",
+    "bot_name": "Token Scalper",
+    "overseer_ai_webhook_url": "",
+    "overseer_ui_webhook_url": "",
+    "custom_webhook_urls": [],
+    "api_key": "",
+    "shared_secret": "",
+    "broadcast_all_events": true,
+    "retry_attempts": 3,
+    "timeout_seconds": 10,
+    "event_filters": {
+      "heartbeat": true,
+      "rug_pull_alert": true,
+      "suspicious_token": true,
+      "high_potential": true,
+      "trade_executed": true,
+      "position_update": true
+    }
   }
 }

@@ -18,28 +18,49 @@
 
 ## Ecosystem Overview
 
-**Vault 77 Ecosystem**
+**Token-scalper** is the core automated trading and scam-detection engine in a multi-bot ecosystem:
 
-This repository is part of a multi-bot ecosystem:
+- Scans blockchains for new tokens, scams, and rugpulls.
+- Trades and manages positions automatically.
+- Reports all findings via webhooks to:
+  - The Twitter bot ([overseer-bot-ai](https://github.com/Unwrenchable/overseer-bot-ai)) for public alerts.
+  - The dashboard UI ([overseer-bot-ui](https://github.com/Unwrenchable/overseer-bot-ui)) for human monitoring and manual checks.
 
-- **Token-scalper**: Automated trading and scam detection engine
-- **overseer-bot-ai**: Twitter/X alert broadcaster
-- **overseer-bot-ui**: Dashboard and manual control center
+**This bot does not post to Twitter or provide a web UI. It is designed to run independently and report to other services.**
 
 **Ecosystem Diagram:**
 ```
--------------------+      webhook/API      +-------------------+
++-------------------+      webhook/API      +-------------------+
 |   Token-scalper   |  ------------------>  |  overseer-bot-ai  |
 | (scans, detects)  |                       | (posts to Twitter)|
--------------------+                       +-------------------+
++-------------------+                       +-------------------+
          |                                         ^
          | webhook/API                              |
          v                                         |
--------------------+      fetch/display     +-------------------+
++-------------------+      fetch/display     +-------------------+
 | overseer-bot-ui   |  <------------------  |  overseer-bot-ai  |
 | (dashboard)       |                       | (API)             |
--------------------+                       +-------------------+
++-------------------+                       +-------------------+
 ```
+
+### Ecosystem Setup
+
+For detailed instructions on setting up the complete ecosystem with all three bots communicating:
+
+📖 **[ECOSYSTEM_SETUP.md](ECOSYSTEM_SETUP.md)** - Complete guide for deploying and wiring all bots together
+
+📖 **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - API endpoints and webhook event schemas
+
+Key features of ecosystem integration:
+- **Unified Event Broadcasting**: Automatic alerts to all connected bots
+- **Heartbeat Monitoring**: Real-time status tracking across the ecosystem  
+- **Webhook Authentication**: Secure API key and shared secret support
+- **Standardized Events**: Common schema for all inter-bot communication
+- **Health Checks**: Status endpoints for monitoring system health
+
+---
+
+> **🔐 SECURITY NOTICE**: This bot now supports environment variables for storing sensitive data securely. **ALWAYS use `.env` files for private keys and RPC URLs.** Never commit sensitive data to Git!
 
 ---
 
@@ -70,8 +91,22 @@ This repository is part of a multi-bot ecosystem:
 +-------------------+                       +-------------------+
 ```
 
+### Ecosystem Setup
 
-> **🔐 SECURITY NOTICE**: This bot now supports environment variables for storing sensitive data securely. **ALWAYS use `.env` files for private keys and RPC URLs.** Never commit sensitive data to Git!
+For detailed instructions on setting up the complete ecosystem with all three bots communicating:
+
+📖 **[ECOSYSTEM_SETUP.md](ECOSYSTEM_SETUP.md)** - Complete guide for deploying and wiring all bots together
+
+📖 **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - API endpoints and webhook event schemas
+
+Key features of ecosystem integration:
+- **Unified Event Broadcasting**: Automatic alerts to all connected bots
+- **Heartbeat Monitoring**: Real-time status tracking across the ecosystem  
+- **Webhook Authentication**: Secure API key and shared secret support
+- **Standardized Events**: Common schema for all inter-bot communication
+- **Health Checks**: Status endpoints for monitoring system health
+
+---
 
 A sophisticated cryptocurrency trading bot that monitors for new token launches, automatically buys promising tokens, and sells them for profit using a responsible selling strategy that prevents price crashes ("killing charts"). Features advanced rug pull protection, moonshot position retention, **multi-wallet/multi-chain support**, **ninja mode for stealth operation**, **🤖 AI-powered token analysis**, **📊 real-time monitoring dashboard**, and **📱 social media integration**.
 

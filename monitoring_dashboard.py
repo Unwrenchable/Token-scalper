@@ -3,12 +3,15 @@ Web-based Monitoring Dashboard
 Real-time monitoring interface for wallet tracking and analytics
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, abort
 import logging
 import os
 from typing import Dict, List
 from datetime import datetime, timedelta
 import json
+import hmac
+import hashlib
+from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 # Load secret key from environment or generate a secure random one
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
+# Webhook authentication
+WEBHOOK_API_KEY = os.getenv('ECOSYSTEM_API_KEY', '')
+WEBHOOK_SHARED_SECRET = os.getenv('ECOSYSTEM_SHARED_SECRET', '')
 
 # Global state (in production, use Redis or database)
 dashboard_state = {
@@ -155,6 +161,265 @@ def api_search_developer(address):
         'found': False,
         'message': 'Developer tracking integration pending'
     })
+
+
+# =============================================================================
+# WEBHOOK AUTHENTICATION & ECOSYSTEM INTEGRATION ENDPOINTS
+# =============================================================================
+
+def require_webhook_auth(f):
+    """Decorator to require webhook authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if authentication is configured
+        if not WEBHOOK_API_KEY and not WEBHOOK_SHARED_SECRET:
+            # No auth configured, allow all (development mode)
+            logger.warning("Webhook auth not configured - accepting all requests")
+            return f(*args, **kwargs)
+        
+        # Check Bearer token
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer ') and WEBHOOK_API_KEY:
+            token = auth_header[7:]
+            if token == WEBHOOK_API_KEY:
+                return f(*args, **kwargs)
+        
+        # Check shared secret
+        secret_header = request.headers.get('X-Shared-Secret', '')
+        if secret_header and WEBHOOK_SHARED_SECRET:
+            if secret_header == WEBHOOK_SHARED_SECRET:
+                return f(*args, **kwargs)
+        
+        # Authentication failed
+        logger.warning(f"Unauthorized webhook access attempt from {request.remote_addr}")
+        abort(401, description="Unauthorized: Invalid or missing authentication")
+    
+    return decorated_function
+
+
+@app.route('/api/webhook/event', methods=['POST'])
+@require_webhook_auth
+def webhook_receive_event():
+    """
+    Receive events from other ecosystem bots (overseer-bot-ai, overseer-bot-ui)
+    
+    Expected payload:
+    {
+        "event_id": "unique-event-id",
+        "event_type": "command|status_request|alert",
+        "source": {
+            "bot_id": "overseer-ai-001",
+            "bot_name": "Overseer Bot AI",
+            "bot_type": "overseer-bot-ai"
+        },
+        "timestamp": "2024-01-01T12:00:00.000Z",
+        "priority": "low|normal|high|critical",
+        "data": { ... }
+    }
+    """
+    try:
+        event = request.get_json()
+        
+        if not event:
+            return jsonify({'error': 'No JSON payload provided'}), 400
+        
+        # Validate required fields
+        required_fields = ['event_id', 'event_type', 'source', 'timestamp']
+        for field in required_fields:
+            if field not in event:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        event_type = event['event_type']
+        source = event['source']
+        data = event.get('data', {})
+        
+        logger.info(f"📥 Received webhook event: {event_type} from {source.get('bot_id', 'unknown')}")
+        
+        # Process event based on type
+        response_data = _process_webhook_event(event_type, source, data)
+        
+        # Add to recent alerts for dashboard visibility
+        dashboard_state['recent_alerts'].insert(0, {
+            'type': f"webhook_{event_type}",
+            'message': f"Event from {source.get('bot_name', 'unknown')}: {event_type}",
+            'severity': 'info',
+            'timestamp': datetime.now().isoformat()
+        })
+        dashboard_state['recent_alerts'] = dashboard_state['recent_alerts'][:50]
+        
+        return jsonify({
+            'status': 'success',
+            'event_id': event['event_id'],
+            'processed_at': datetime.now().isoformat(),
+            'response': response_data
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error processing webhook event: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/webhook/heartbeat', methods=['POST'])
+@require_webhook_auth
+def webhook_receive_heartbeat():
+    """
+    Receive heartbeat from other ecosystem bots
+    Allows overseer-bot-ai and overseer-bot-ui to report their status
+    """
+    try:
+        heartbeat = request.get_json()
+        
+        if not heartbeat:
+            return jsonify({'error': 'No JSON payload provided'}), 400
+        
+        bot_id = heartbeat.get('bot_id', 'unknown')
+        status = heartbeat.get('status', 'unknown')
+        
+        logger.debug(f"💓 Heartbeat from {bot_id}: {status}")
+        
+        # Store heartbeat info (in production, use Redis or database)
+        # For now, just acknowledge
+        
+        return jsonify({
+            'status': 'acknowledged',
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error processing heartbeat: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/status/health', methods=['GET'])
+def api_health_check():
+    """
+    Health check endpoint for ecosystem monitoring
+    Returns detailed system health information
+    """
+    try:
+        health_status = {
+            'status': 'healthy',
+            'bot_id': os.getenv('ECOSYSTEM_BOT_ID', 'token-scalper-001'),
+            'bot_type': 'token-scalper',
+            'timestamp': datetime.now().isoformat(),
+            'uptime_seconds': _calculate_uptime(),
+            'components': {
+                'dashboard': {
+                    'status': 'healthy',
+                    'active_positions': len(dashboard_state['active_positions']),
+                    'recent_alerts': len(dashboard_state['recent_alerts'])
+                },
+                'analytics': {
+                    'status': 'healthy',
+                    'total_trades': dashboard_state['analytics'].get('total_trades', 0),
+                    'total_profit_usd': dashboard_state['analytics'].get('total_profit_usd', 0)
+                },
+                'webhooks': {
+                    'status': 'configured' if WEBHOOK_API_KEY or WEBHOOK_SHARED_SECRET else 'unconfigured',
+                    'auth_enabled': bool(WEBHOOK_API_KEY or WEBHOOK_SHARED_SECRET)
+                }
+            },
+            'version': '2.0.0',
+            'capabilities': [
+                'token_scanning',
+                'automated_trading',
+                'rug_pull_detection',
+                'developer_tracking',
+                'webhook_events',
+                'real_time_alerts'
+            ]
+        }
+        
+        return jsonify(health_status), 200
+        
+    except Exception as e:
+        logger.error(f"Error in health check: {e}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+
+@app.route('/api/status/metrics', methods=['GET'])
+def api_metrics():
+    """
+    Metrics endpoint for Prometheus or other monitoring systems
+    Returns key performance metrics
+    """
+    try:
+        metrics = {
+            'token_scalper_total_trades': dashboard_state['analytics'].get('total_trades', 0),
+            'token_scalper_successful_trades': dashboard_state['analytics'].get('successful_trades', 0),
+            'token_scalper_rug_pulls_avoided': dashboard_state['analytics'].get('rug_pulls_avoided', 0),
+            'token_scalper_total_profit_usd': dashboard_state['analytics'].get('total_profit_usd', 0),
+            'token_scalper_active_positions': len(dashboard_state['active_positions']),
+            'token_scalper_tracked_developers': dashboard_state['developer_stats'].get('total_developers', 0),
+            'token_scalper_flagged_developers': dashboard_state['developer_stats'].get('scam_developers', 0),
+            'token_scalper_recent_alerts': len(dashboard_state['recent_alerts']),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        return jsonify(metrics), 200
+        
+    except Exception as e:
+        logger.error(f"Error fetching metrics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+def _process_webhook_event(event_type: str, source: Dict, data: Dict) -> Dict:
+    """
+    Process incoming webhook event
+    
+    Args:
+        event_type: Type of event
+        source: Event source information
+        data: Event data
+        
+    Returns:
+        Response data
+    """
+    if event_type == 'status_request':
+        # Return current bot status
+        return {
+            'status': 'online',
+            'active_positions': len(dashboard_state['active_positions']),
+            'total_trades': dashboard_state['analytics'].get('total_trades', 0)
+        }
+    
+    elif event_type == 'command':
+        # Handle commands from overseer-bot-ui
+        command = data.get('command', '')
+        logger.info(f"Received command: {command}")
+        
+        # Command handling would go here
+        return {
+            'command': command,
+            'result': 'acknowledged',
+            'note': 'Command processing not yet implemented'
+        }
+    
+    elif event_type == 'alert':
+        # Handle alerts from overseer-bot-ai
+        alert_message = data.get('message', 'Alert received')
+        dashboard_state['recent_alerts'].insert(0, {
+            'type': 'external_alert',
+            'message': alert_message,
+            'severity': data.get('severity', 'info'),
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        return {'result': 'alert_stored'}
+    
+    else:
+        return {'result': 'event_received', 'note': f'Event type {event_type} logged'}
+
+
+def _calculate_uptime() -> int:
+    """Calculate bot uptime in seconds"""
+    # This would track actual start time in production
+    # For now, return a placeholder
+    return 0
 
 
 # HTML template (embedded for simplicity)
