@@ -3,10 +3,14 @@ Multi-wallet management module
 Handles multiple wallets across different chains
 """
 
+
 import logging
 from typing import Dict, List, Optional, Tuple
 from web3 import Web3
 from decimal import Decimal
+from solders.keypair import Keypair as SolKeypair
+from solana.rpc.api import Client as SolanaClient
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -99,51 +103,84 @@ class MultiWalletManager:
             rpc_url = wallet_config.get('rpc_url')
             chain_id = wallet_config.get('chain_id')
             private_key = wallet_config.get('private_key')
-            
-            # Initialize Web3 connection
-            w3 = Web3(Web3.HTTPProvider(rpc_url))
-            
-            if not w3.is_connected():
-                logger.error(f"Failed to connect to RPC: {rpc_url}")
-                return None
-                
-            # Get account from private key
-            account = w3.eth.account.from_key(private_key)
-            address = account.address
-            
-            # Get balances
-            base_balance = w3.eth.get_balance(address)
-            base_balance_eth = w3.from_wei(base_balance, 'ether')
-            
-            # Get chain info
-            chain_info = self.CHAIN_CONFIG.get(chain_id, {})
-            chain_name = chain_info.get('name', f'Chain {chain_id}')
-            base_symbol = chain_info.get('symbol', 'ETH')
-            
-            # Get stablecoin balances
-            usdc_balance = 0
-            if 'usdc_address' in chain_info:
-                usdc_balance = self._get_token_balance(w3, address, chain_info['usdc_address'])
-                
-            wallet_info = {
-                'w3': w3,
-                'account': account,
-                'address': address,
-                'chain_id': chain_id,
-                'chain_name': chain_name,
-                'rpc_url': rpc_url,
-                'base_symbol': base_symbol,
-                'base_balance': float(base_balance_eth),
-                'usdc_balance': usdc_balance,
-                'total_balance_usd': self._calculate_usd_value(float(base_balance_eth), usdc_balance, chain_id),
-                'chain_config': chain_info,
-            }
-            
-            logger.info(f"✅ Connected to {chain_name} wallet: {address}")
-            logger.info(f"   Balance: {base_balance_eth:.4f} {base_symbol}, ${usdc_balance:.2f} USDC")
-            
-            return wallet_info
-            
+            # Solana detection: chain_id == 'solana-devnet' or rpc_url contains 'solana'
+            is_solana = str(chain_id).lower().startswith('solana') or (
+                rpc_url and 'solana' in rpc_url)
+            if is_solana:
+                sol_client = SolanaClient(rpc_url)
+                sol_keypair = SolKeypair.from_base58_string(private_key)
+                address = str(sol_keypair.pubkey())
+                # Get balance (lamports)
+                balance_resp = sol_client.get_balance(address)
+                base_balance = balance_resp['result']['value'] / 1e9  # SOL
+                chain_name = 'Solana'
+                base_symbol = 'SOL'
+                # USDC SPL token address (devnet)
+                usdc_token_address = '7XSzQZyQn5kQwQ6r5oXcQ2Yw1V6QwQ6r5oXcQ2Yw1V6Q'  # Example, replace with real devnet USDC mint
+                usdc_balance = self._get_spl_token_balance(sol_client, address, usdc_token_address)
+                wallet_info = {
+                    'sol_client': sol_client,
+                    'sol_keypair': sol_keypair,
+                    'address': address,
+                    'chain_id': chain_id,
+                    'chain_name': chain_name,
+                    'rpc_url': rpc_url,
+                    'base_symbol': base_symbol,
+                    'base_balance': float(base_balance),
+                    'usdc_balance': usdc_balance,
+                    'total_balance_usd': self._calculate_usd_value(float(base_balance), usdc_balance, chain_id),
+                    'chain_config': {},
+                }
+                logger.info(f"✅ Connected to {chain_name} wallet: {address}")
+                logger.info(f"   Balance: {base_balance:.4f} {base_symbol}, {usdc_balance:.2f} USDC")
+                return wallet_info
+                def _get_spl_token_balance(self, sol_client, owner_address, token_mint_address):
+                    """Get SPL token balance for a Solana wallet."""
+                    try:
+                        resp = sol_client.get_token_accounts_by_owner(owner_address, {'mint': token_mint_address})
+                        accounts = resp['result']['value']
+                        if not accounts:
+                            return 0.0
+                        # Get balance from the first account
+                        token_account = accounts[0]['pubkey']
+                        balance_resp = sol_client.get_token_account_balance(token_account)
+                        amount = float(balance_resp['result']['value']['uiAmount'])
+                        return amount
+                    except Exception as e:
+                        logger.debug(f"Could not get SPL token balance for {token_mint_address}: {e}")
+                        return 0.0
+            else:
+                # EVM logic
+                w3 = Web3(Web3.HTTPProvider(rpc_url))
+                if not w3.is_connected():
+                    logger.error(f"Failed to connect to RPC: {rpc_url}")
+                    return None
+                account = w3.eth.account.from_key(private_key)
+                address = account.address
+                base_balance = w3.eth.get_balance(address)
+                base_balance_eth = w3.from_wei(base_balance, 'ether')
+                chain_info = self.CHAIN_CONFIG.get(chain_id, {})
+                chain_name = chain_info.get('name', f'Chain {chain_id}')
+                base_symbol = chain_info.get('symbol', 'ETH')
+                usdc_balance = 0
+                if 'usdc_address' in chain_info:
+                    usdc_balance = self._get_token_balance(w3, address, chain_info['usdc_address'])
+                wallet_info = {
+                    'w3': w3,
+                    'account': account,
+                    'address': address,
+                    'chain_id': chain_id,
+                    'chain_name': chain_name,
+                    'rpc_url': rpc_url,
+                    'base_symbol': base_symbol,
+                    'base_balance': float(base_balance_eth),
+                    'usdc_balance': usdc_balance,
+                    'total_balance_usd': self._calculate_usd_value(float(base_balance_eth), usdc_balance, chain_id),
+                    'chain_config': chain_info,
+                }
+                logger.info(f"✅ Connected to {chain_name} wallet: {address}")
+                logger.info(f"   Balance: {base_balance_eth:.4f} {base_symbol}, ${usdc_balance:.2f} USDC")
+                return wallet_info
         except Exception as e:
             logger.error(f"Error connecting wallet: {e}")
             return None
@@ -179,6 +216,28 @@ class MultiWalletManager:
             logger.debug(f"Could not get token balance for {token_address}: {e}")
             return 0.0
             
+    def _get_live_price(self, symbol):
+        """Get live USD price for a given symbol using CoinGecko."""
+        try:
+            coingecko_ids = {
+                'ETH': 'ethereum',
+                'BNB': 'binancecoin',
+                'MATIC': 'matic-network',
+                'AVAX': 'avalanche-2',
+                'FTM': 'fantom',
+                'SOL': 'solana',
+            }
+            coingecko_id = coingecko_ids.get(symbol.upper())
+            if not coingecko_id:
+                return None
+            url = f'https://api.coingecko.com/api/v3/simple/price?ids={coingecko_id}&vs_currencies=usd'
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            return float(data[coingecko_id]['usd'])
+        except Exception as e:
+            logger.debug(f"Could not fetch live price for {symbol}: {e}")
+            return None
     def _calculate_usd_value(self, base_amount: float, usdc_amount: float, chain_id: int) -> float:
         """
         Calculate approximate USD value of wallet
@@ -189,6 +248,7 @@ class MultiWalletManager:
         # Approximate prices (SHOULD BE REPLACED with real price feeds in production)
         # These are placeholder values for initial estimation
         base_prices = {
+            'solana-devnet': 100.0,  # Approximate SOL price
             1: 3000.0,    # ETH - APPROXIMATE
             56: 300.0,    # BNB - APPROXIMATE
             137: 0.80,    # MATIC - APPROXIMATE
@@ -199,6 +259,9 @@ class MultiWalletManager:
         }
         
         base_price = base_prices.get(chain_id, 0)
+        if isinstance(chain_id, str) and chain_id.lower().startswith('solana'):
+            base_price = base_prices['solana-devnet']
+        return (base_amount * base_price) + usdc_amount
         return (base_amount * base_price) + usdc_amount
         
     def connect_all_wallets(self) -> List[Dict]:

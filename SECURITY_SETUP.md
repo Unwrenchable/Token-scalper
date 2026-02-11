@@ -1,4 +1,5 @@
-# Quick Start Guide - Secure Configuration 🔐
+# SECURITY_SETUP.md - Token-scalper
+# Professional Security Guide 🔐
 
 ## TL;DR - Get Started in 3 Steps
 

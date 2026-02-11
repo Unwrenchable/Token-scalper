@@ -1,0 +1,78 @@
+__pycache__/
+*.py[cod]
+$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.log
+scalper_bot.log
+.env
+.venv
+.vscode/
+.idea/
+*.swp# Professional .gitignore for Token-scalper
+# Covers Python, environment, logs, IDE, and sensitive config
+
+# Python cache and build
+__pycache__/
+*.py[cod]
+$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+scalper_bot.log
+
+# Environment files
+.env
+.venv
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sensitive config
+config.json
+
+# OS files
+.DS_Store
+Thumbs.db

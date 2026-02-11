@@ -1,6 +1,48 @@
 # Token Scalper Bot 🚀🥷🤖📊
 
+## ☢️ Overseer Bot AI - Vault 77
+
+<div align="center">
+
+![Vault-Tec](https://img.shields.io/badge/VAULT--TEC-77-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/STATUS-OPERATIONAL-green?style=for-the-badge)
+![Python](https://img.shields.io/badge/PYTHON-3.9%2B-blue?style=for-the-badge)
+
+**A Fallout-themed Twitter bot with cryptocurrency intelligence**
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Deployment](#-deployment)
+
+</div>
+
 ---
+
+## Ecosystem Overview
+
+**Vault 77 Ecosystem**
+
+This repository is part of a multi-bot ecosystem:
+
+- **Token-scalper**: Automated trading and scam detection engine
+- **overseer-bot-ai**: Twitter/X alert broadcaster
+- **overseer-bot-ui**: Dashboard and manual control center
+
+**Ecosystem Diagram:**
+```
+-------------------+      webhook/API      +-------------------+
+|   Token-scalper   |  ------------------>  |  overseer-bot-ai  |
+| (scans, detects)  |                       | (posts to Twitter)|
+-------------------+                       +-------------------+
+         |                                         ^
+         | webhook/API                              |
+         v                                         |
+-------------------+      fetch/display     +-------------------+
+| overseer-bot-ui   |  <------------------  |  overseer-bot-ai  |
+| (dashboard)       |                       | (API)             |
+-------------------+                       +-------------------+
+```
+
+---
+
 ## Ecosystem Overview
 
 **Token-scalper** is the core automated trading and scam-detection engine in a multi-bot ecosystem:
