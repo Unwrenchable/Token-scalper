@@ -48,6 +48,9 @@ class ConfigLoader:
         # Override AI API key with environment variable if present
         config = ConfigLoader._load_ai_config_from_env(config)
         
+        # Override ecosystem config with environment variables if present
+        config = ConfigLoader._load_ecosystem_config_from_env(config)
+        
         return config
         
     @staticmethod
@@ -185,6 +188,69 @@ class ConfigLoader:
             if overseer_api_key:
                 config['social_media']['overseer_api_key'] = overseer_api_key
             logger.info("🤖 Overseer bot credentials loaded from environment variables (SECURE)")
+        
+        return config
+        
+    @staticmethod
+    def _load_ecosystem_config_from_env(config: Dict) -> Dict:
+        """
+        Load ecosystem integration config from environment variables
+        
+        Environment variables:
+        ECOSYSTEM_BOT_ID - Unique bot identifier
+        ECOSYSTEM_API_KEY - API key for authentication
+        ECOSYSTEM_SHARED_SECRET - Shared secret for authentication
+        ECOSYSTEM_OVERSEER_AI_URL - Webhook URL for overseer-bot-ai
+        ECOSYSTEM_OVERSEER_UI_URL - Webhook URL for overseer-bot-ui
+        """
+        # Ensure ecosystem section exists
+        if 'ecosystem' not in config:
+            config['ecosystem'] = {
+                'enabled': False,
+                'bot_id': 'token-scalper-001',
+                'bot_name': 'Token Scalper',
+                'overseer_ai_webhook_url': '',
+                'overseer_ui_webhook_url': '',
+                'custom_webhook_urls': [],
+                'api_key': '',
+                'shared_secret': '',
+                'broadcast_all_events': True,
+                'retry_attempts': 3,
+                'timeout_seconds': 10
+            }
+        
+        # Bot identification
+        bot_id = os.getenv("ECOSYSTEM_BOT_ID")
+        if bot_id:
+            config['ecosystem']['bot_id'] = bot_id
+            logger.info(f"🌐 Ecosystem bot ID loaded from environment: {bot_id}")
+        
+        # API authentication
+        api_key = os.getenv("ECOSYSTEM_API_KEY")
+        if api_key:
+            config['ecosystem']['api_key'] = api_key
+            logger.info("🔑 Ecosystem API key loaded from environment (SECURE)")
+        
+        shared_secret = os.getenv("ECOSYSTEM_SHARED_SECRET")
+        if shared_secret:
+            config['ecosystem']['shared_secret'] = shared_secret
+            logger.info("🔐 Ecosystem shared secret loaded from environment (SECURE)")
+        
+        # Webhook URLs
+        overseer_ai_url = os.getenv("ECOSYSTEM_OVERSEER_AI_URL")
+        if overseer_ai_url:
+            config['ecosystem']['overseer_ai_webhook_url'] = overseer_ai_url
+            logger.info(f"🤖 Overseer AI webhook URL configured: {overseer_ai_url}")
+        
+        overseer_ui_url = os.getenv("ECOSYSTEM_OVERSEER_UI_URL")
+        if overseer_ui_url:
+            config['ecosystem']['overseer_ui_webhook_url'] = overseer_ui_url
+            logger.info(f"🖥️ Overseer UI webhook URL configured: {overseer_ui_url}")
+        
+        # Enable ecosystem if any URLs are configured
+        if overseer_ai_url or overseer_ui_url:
+            config['ecosystem']['enabled'] = True
+            logger.info("✅ Ecosystem integration enabled")
         
         return config
         
