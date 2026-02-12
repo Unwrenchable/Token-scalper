@@ -7,20 +7,22 @@ import os
 from eth_account import Account
 from dotenv import set_key
 
-NUM_WALLETS = int(os.getenv('NUM_WALLETS', 3))
-ENV_PATH = os.getenv('ENV_PATH', '.env')
+def main():
+    """Generate wallets and export them to .env file"""
+    NUM_WALLETS = int(os.getenv('NUM_WALLETS', 3))
+    ENV_PATH = os.getenv('ENV_PATH', '.env')
 
-Account.enable_unaudited_hdwallet_features()
+    Account.enable_unaudited_hdwallet_features()
 
-wallets = []
-for i in range(1, NUM_WALLETS + 1):
-    acct = Account.create()
-    wallets.append({
-        'name': f'WALLET_{i}',
-        'private_key': acct.key.hex(),
-        'address': acct.address
-    })
-    set_key(ENV_PATH, f'WALLET_{i}_PRIVATE_KEY', acct.key.hex())
-    set_key(ENV_PATH, f'WALLET_{i}_ADDRESS', acct.address)
+    wallets = []
+    for i in range(1, NUM_WALLETS + 1):
+        acct = Account.create()
+        wallets.append({
+            'name': f'WALLET_{i}',
+            'private_key': acct.key.hex(),
+            'address': acct.address
+        })
+        set_key(ENV_PATH, f'WALLET_{i}_PRIVATE_KEY', acct.key.hex())
+        set_key(ENV_PATH, f'WALLET_{i}_ADDRESS', acct.address)
 
-print(f"Generated {NUM_WALLETS} wallets and exported to {ENV_PATH}")
+    print(f"Generated {NUM_WALLETS} wallets and exported to {ENV_PATH}")
