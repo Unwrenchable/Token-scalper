@@ -39,6 +39,9 @@ def run_web_service(config_path):
     logger.info("🚀 Starting Token Scalper Bot in web service mode")
     logger.info("📊 Dashboard will be available for monitoring")
     
+    # Determine port from environment or default
+    port = int(os.getenv('PORT', 5000))
+    
     # Load config
     try:
         config = ConfigLoader.load_config(config_path)
@@ -49,7 +52,7 @@ def run_web_service(config_path):
             'dashboard': {
                 'enabled': True,
                 'host': '0.0.0.0',
-                'port': int(os.getenv('PORT', 5000))
+                'port': port
             }
         }
     
@@ -58,7 +61,8 @@ def run_web_service(config_path):
         config['dashboard'] = {}
     config['dashboard']['enabled'] = True
     config['dashboard']['host'] = '0.0.0.0'  # Bind to all interfaces
-    config['dashboard']['port'] = int(os.getenv('PORT', config.get('dashboard', {}).get('port', 5000)))
+    # Use PORT from environment if set, otherwise use config value
+    config['dashboard']['port'] = int(os.getenv('PORT', config['dashboard'].get('port', 5000)))
     
     # Initialize and run dashboard
     dashboard = MonitoringDashboard(config)
