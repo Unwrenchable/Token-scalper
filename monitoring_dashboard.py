@@ -55,7 +55,9 @@ class MonitoringDashboard:
         self.config = config
         self.dashboard_config = config.get('dashboard', {})
         self.enabled = self.dashboard_config.get('enabled', False)
-        self.port = self.dashboard_config.get('port', 5000)
+        
+        # Support PORT environment variable for deployment platforms (Render, Heroku, etc.)
+        self.port = int(os.getenv('PORT', self.dashboard_config.get('port', 5000)))
         self.host = self.dashboard_config.get('host', '127.0.0.1')
         
         self.dev_tracker = dev_tracker
