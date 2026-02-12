@@ -675,6 +675,78 @@ The bot will:
 11. **Monitor base currency for good re-entry points**
 12. **Buy back base currency during dips**
 
+### CLI Commands 💻
+
+The bot includes a CLI interface for various operations:
+
+```bash
+# Show help and available commands
+python main.py --help
+
+# Run the bot with trading
+python main.py run
+
+# Search for airdrop opportunities
+python main.py airdrops
+
+# Generate new wallets
+python main.py genwallets
+
+# Run as web service with dashboard (for deployment)
+python main.py web
+```
+
+### Deployment as Web Service 🌐
+
+The bot can run as a web service with a monitoring dashboard, perfect for deployment to platforms like **Render**, **Heroku**, **Railway**, or **DigitalOcean**.
+
+**Key Features:**
+- Automatically detects deployment environment via `PORT` environment variable
+- Runs monitoring dashboard on configurable port
+- Binds to `0.0.0.0` for external access
+- Keeps service alive for continuous monitoring
+
+**Automatic Detection:**
+When the `PORT` environment variable is set (as is common on deployment platforms), the bot automatically starts in web service mode:
+
+```bash
+# On Render/Heroku, this happens automatically:
+PORT=10000 python main.py
+# Output: Detected PORT environment variable - running in web service mode
+# Dashboard starts on http://0.0.0.0:10000
+```
+
+**Manual Web Service Mode:**
+```bash
+# Explicitly run as web service
+python main.py web
+
+# With custom config
+python main.py --config my-config.json web
+```
+
+**Deployment Platforms:**
+- **Render.com**: Automatically detects PORT and runs dashboard
+- **Heroku**: Uses PORT from environment
+- **Railway**: Compatible with PORT-based services
+- **Docker**: Expose port in Dockerfile and docker-compose
+
+**Dashboard Access:**
+Once deployed, the dashboard provides:
+- Real-time position monitoring
+- Wallet balance tracking
+- Recent alerts and notifications
+- Developer reputation stats
+- Performance analytics
+- Webhook endpoints for ecosystem integration
+
+**Environment Variables for Deployment:**
+```bash
+PORT=10000                    # Port for web service (auto-detected)
+FLASK_SECRET_KEY=your-secret  # Flask session secret
+ECOSYSTEM_API_KEY=your-key    # For webhook authentication
+```
+
 ## How It Protects You 🛡️
 
 ### Normal Profit Taking (No Rug Pull)
