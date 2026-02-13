@@ -35,6 +35,12 @@ python main.py --config production-config.json web
 **Setup:**
 
 **Option 1: Using render.yaml (Recommended)**
+
+The `render.yaml` file in the repository root includes:
+- **Build Command:** `./build.sh` (upgrades pip and installs requirements)
+- **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
+
+To deploy:
 1. Create a new Web Service
 2. Connect your GitHub repository
 3. Render will automatically detect `render.yaml` in the repository root
@@ -45,27 +51,25 @@ python main.py --config production-config.json web
 1. Create a new Web Service
 2. Connect your GitHub repository
 3. Configure build and start commands:
-   - **Build Command:** `./build.sh` (upgrades pip and installs requirements)
-   - **Start Command:** `python main.py`
+   - **Build Command:** `./build.sh`
+   - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
 4. Add environment variables (see below)
 5. Deploy
 
-**Option 3: Simple Build (without pip upgrade)**
+**Option 3: Using Python main.py (Alternative)**
 1. Create a new Web Service
 2. Connect your GitHub repository
 3. Configure build and start commands:
-   - **Build Command:** `pip install -r requirements.txt`
+   - **Build Command:** `./build.sh`
    - **Start Command:** `python main.py`
-4. Add environment variables (see below)
+4. Add environment variables including `USE_GUNICORN=true` (see below)
 5. Deploy
-   
-Note: Options 1 and 2 upgrade pip to the latest version during build to avoid upgrade notices in logs.
 
-Render automatically sets the `PORT` environment variable, and the bot will:
-- Detect the deployment environment
-- Start using Gunicorn production server
-- Bind to all interfaces (0.0.0.0)
-- Launch the monitoring dashboard
+Note: Options 1 and 2 use Gunicorn directly for production deployment. Option 3 uses `python main.py` which can auto-detect and start Gunicorn when `USE_GUNICORN=true` is set, or fall back to Flask dev server.
+
+Render automatically sets the `PORT` environment variable, which the bot uses to:
+- Bind to the correct port
+- Start the monitoring dashboard
 
 ### Heroku
 
@@ -73,7 +77,11 @@ Render automatically sets the `PORT` environment variable, and the bot will:
 1. Create a new app
 2. Add Python buildpack
 3. Deploy via Git or GitHub integration
-4. Use Procfile (optional):
+4. Add a Procfile (recommended):
+   ```
+   web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:application
+   ```
+   Or use the Python wrapper (alternative):
    ```
    web: python main.py
    ```
