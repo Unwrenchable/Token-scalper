@@ -34,6 +34,8 @@ python main.py --config production-config.json web
 
 ### Render.com
 
+> **🚨 Quick Fix for ImportError:** See [README.render.md](README.render.md) for a quick reference guide, or jump to the [Troubleshooting section](#troubleshooting) below.
+> 
 > **⚠️ IMPORTANT:** If you see the error "ImportError: Failed to find application, did you mean 'main:application'?" or Render is running `gunicorn main.py`, your service has a manual Start Command in the dashboard that's overriding the repository configuration. See the [Troubleshooting](#troubleshooting) section below for solutions.
 
 **Setup:**
