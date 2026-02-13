@@ -46,7 +46,9 @@ def run_web_service(config_path):
     port = int(os.getenv('PORT', 5000))
     
     # Check if we should use Gunicorn (production) or Flask dev server (development)
-    use_gunicorn = os.getenv('USE_GUNICORN', 'true').lower() in ('true', '1', 'yes')
+    # Accepts true/1/yes (case insensitive) for enabled, anything else for disabled
+    use_gunicorn_env = os.getenv('USE_GUNICORN', 'true').lower()
+    use_gunicorn = use_gunicorn_env in ('true', '1', 'yes')
     
     if use_gunicorn:
         logger.info("🔧 Using Gunicorn production WSGI server")
@@ -114,8 +116,11 @@ def run_web_service(config_path):
         # Load config
         try:
             config = ConfigLoader.load_config(config_path)
-        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+        except Exception as e:
+            # Catch all config loading errors to prevent service startup failure
+            # Common exceptions: FileNotFoundError, JSONDecodeError, KeyError, ValueError
             logger.warning(f"Could not load config from {config_path}: {e}")
+            logger.info("Using minimal dashboard-only configuration")
             # Use minimal config for dashboard only
             config = {
                 'dashboard': {
