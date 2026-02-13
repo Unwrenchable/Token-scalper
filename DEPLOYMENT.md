@@ -113,7 +113,7 @@ services:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `FLASK_SECRET_KEY` | Flask session secret | `random-secret-key-123` |
-| `USE_GUNICORN` | Use Gunicorn server (default: true) | `true` or `false` |
+| `USE_GUNICORN` | Use Gunicorn server (default: true). Accepts: true/1/yes or false/0/no | `true` |
 | `WEB_CONCURRENCY` | Number of Gunicorn workers | `4` |
 | `GUNICORN_TIMEOUT` | Worker timeout in seconds (default: 120) | `180` |
 | `ECOSYSTEM_API_KEY` | API key for webhook auth | `your-api-key` |
