@@ -34,16 +34,18 @@ python main.py --config production-config.json web
 
 **Setup:**
 
-**Option 1: Using render.yaml (Recommended)**
+**Option 1: Using render.yaml and Procfile (Recommended)**
 
-The `render.yaml` file in the repository root includes:
+The repository includes both `render.yaml` and `Procfile` for automatic deployment:
+- **render.yaml:** Configures build command, runtime, and environment variables
+- **Procfile:** Specifies the start command (takes precedence over auto-detection)
 - **Build Command:** `./build.sh` (upgrades pip and installs requirements)
 - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
 
 To deploy:
 1. Create a new Web Service
 2. Connect your GitHub repository
-3. Render will automatically detect `render.yaml` in the repository root
+3. Render will automatically detect `render.yaml` and `Procfile` in the repository root
 4. Add environment variables (see below)
 5. Deploy
 
@@ -77,11 +79,11 @@ Render automatically sets the `PORT` environment variable, which the bot uses to
 1. Create a new app
 2. Add Python buildpack
 3. Deploy via Git or GitHub integration
-4. Add a Procfile (recommended):
+4. The repository includes a `Procfile` with the recommended Gunicorn command:
    ```
-   web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:application
+   web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
    ```
-   Or use the Python wrapper (alternative):
+   Alternative: You can modify the Procfile to use the Python wrapper:
    ```
    web: python main.py
    ```
