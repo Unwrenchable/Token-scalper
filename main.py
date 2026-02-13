@@ -3,7 +3,6 @@ Main CLI entry point for Token Scalper Bot
 """
 
 import argparse
-import json
 import logging
 import multiprocessing
 import os
@@ -101,7 +100,9 @@ def run_web_service(config_path):
         # The process will not return unless Gunicorn fails to start
         try:
             os.execvp('gunicorn', gunicorn_cmd)
-        except OSError as e:
+        except (OSError, FileNotFoundError) as e:
+            # OSError: Permission denied, invalid arguments, etc.
+            # FileNotFoundError: gunicorn not found in PATH
             logger.error(f"Failed to start Gunicorn: {e}")
             logger.error("Ensure Gunicorn is installed: pip install gunicorn")
             sys.exit(1)
@@ -117,8 +118,10 @@ def run_web_service(config_path):
         try:
             config = ConfigLoader.load_config(config_path)
         except Exception as e:
-            # Catch all config loading errors to prevent service startup failure
-            # Common exceptions: FileNotFoundError, JSONDecodeError, KeyError, ValueError
+            # Intentionally catch all exceptions to ensure dashboard always starts
+            # Config loading can fail for many reasons (file not found, invalid JSON,
+            # missing keys, import errors, etc.) and we want the dashboard to be
+            # available for monitoring even when the config is broken
             logger.warning(f"Could not load config from {config_path}: {e}")
             logger.info("Using minimal dashboard-only configuration")
             # Use minimal config for dashboard only
