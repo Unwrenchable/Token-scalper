@@ -41,7 +41,11 @@ python main.py --config production-config.json web
 4. Add environment variables (see below)
 5. Deploy
 
-Render automatically sets the `PORT` environment variable, so the bot will detect it and start the dashboard.
+Render automatically sets the `PORT` environment variable, and the bot will:
+- Detect the deployment environment
+- Start using Gunicorn production server
+- Bind to all interfaces (0.0.0.0)
+- Launch the monitoring dashboard
 
 ### Heroku
 
@@ -109,6 +113,9 @@ services:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `FLASK_SECRET_KEY` | Flask session secret | `random-secret-key-123` |
+| `USE_GUNICORN` | Use Gunicorn server (default: true). Accepts: true/1/yes or false/0/no | `true` |
+| `WEB_CONCURRENCY` | Number of Gunicorn workers | `4` |
+| `GUNICORN_TIMEOUT` | Worker timeout in seconds (default: 120) | `180` |
 | `ECOSYSTEM_API_KEY` | API key for webhook auth | `your-api-key` |
 | `ECOSYSTEM_SHARED_SECRET` | Shared secret for webhooks | `shared-secret-456` |
 
@@ -224,18 +231,39 @@ python main.py web
 
 ### WSGI Server
 
-For production, consider using a production WSGI server like Gunicorn:
+**✅ Production-ready by default!** The bot now uses Gunicorn automatically in web service mode for better performance and security.
+
+**How it works:**
+- Gunicorn is enabled by default (USE_GUNICORN=true)
+- When in web service mode (PORT set or `python main.py web`), Gunicorn starts automatically
+- Worker count is automatically calculated based on available CPU cores
+- Falls back to Flask development server only if `USE_GUNICORN=false` is explicitly set
+
+**Configuration:**
+
+The bot uses optimal defaults, but you can customize:
 
 ```bash
-pip install gunicorn
+# Control worker count (default: auto-calculated from CPU cores)
+WEB_CONCURRENCY=4 python main.py
 
-# Add to requirements.txt
-echo "gunicorn==21.2.0" >> requirements.txt
+# Disable Gunicorn - forces Flask dev server (not recommended for production)
+USE_GUNICORN=false python main.py
+
+# Custom timeout for long-running requests (default: 120 seconds)
+GUNICORN_TIMEOUT=180 python main.py
 ```
 
-Update start command:
+**Manual Gunicorn usage (advanced):**
+
+If you need direct control over Gunicorn:
+
 ```bash
-gunicorn -w 4 -b 0.0.0.0:$PORT monitoring_dashboard:app
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with custom Gunicorn settings
+gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:application
 ```
 
 ### Security
