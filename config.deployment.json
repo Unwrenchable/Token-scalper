@@ -1,10 +1,36 @@
 {
+  "wallets": [],
+  "wallet_selection": {
+    "auto_select_funded": true,
+    "min_balance_usd": 10,
+    "prefer_chain_id": null
+  },
+  "trading": {
+    "buy_amount_eth": 0.1,
+    "min_liquidity_eth": 5,
+    "max_buy_tax": 10,
+    "max_sell_tax": 10,
+    "profit_target_percent": 50,
+    "stop_loss_percent": 30,
+    "max_slippage_percent": 15
+  },
+  "ninja_mode": {
+    "enabled": false,
+    "max_positions_per_wallet": 5,
+    "stealth_delay_min_seconds": 1,
+    "stealth_delay_max_seconds": 5,
+    "randomize_amounts": true,
+    "amount_variation_percent": 10,
+    "coordinate_wallets": false
+  },
+  "monitoring": {
+    "scan_interval_seconds": 60,
+    "min_holder_count": 10,
+    "blacklisted_tokens": []
+  },
   "dashboard": {
     "enabled": true,
     "host": "0.0.0.0",
     "port": 5000
-  },
-  "monitoring": {
-    "scan_interval_seconds": 60
   }
 }

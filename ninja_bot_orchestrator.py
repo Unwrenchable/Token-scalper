@@ -55,14 +55,6 @@ class NinjaBotOrchestrator:
                 with open(temp_config_path, 'w') as f:
                     json.dump(wallet_specific_config, f)
                 # Create bot instance
-                    def search_airdrops_all_wallets(self):
-                        """Search for airdrops and print participation info for all wallets"""
-                        airdrop_finder = AirdropFinder()
-                        airdrops = airdrop_finder.get_good_airdrops()
-                        logger.info(f"[NinjaBot] Found {len(airdrops)} good airdrop opportunities.")
-                        for wallet in self.bot_instances:
-                            for airdrop in airdrops:
-                                logger.info(f"Wallet {wallet} can participate in {airdrop.get('title', airdrop.get('name', 'unknown'))} at {airdrop.get('website')}")
                 bot = TokenScalper(temp_config_path)
                 
                 wallet_id = f"{wallet_config.get('chain_id', 0)}:{bot.active_wallet_info['address'][:10]}"
