@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: token-scalper
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: python main.py  # main.py auto-starts Gunicorn when USE_GUNICORN=true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: USE_GUNICORN
+        value: true  # main.py detects this and starts Gunicorn automatically

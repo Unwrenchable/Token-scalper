@@ -33,6 +33,24 @@ python main.py --config production-config.json web
 ### Render.com
 
 **Setup:**
+
+**Option 1: Using render.yaml (Recommended)**
+1. Create a new Web Service
+2. Connect your GitHub repository
+3. Render will automatically detect `render.yaml` in the repository root
+4. Add environment variables (see below)
+5. Deploy
+
+**Option 2: Manual Configuration**
+1. Create a new Web Service
+2. Connect your GitHub repository
+3. Configure build and start commands:
+   - **Build Command:** `./build.sh` (upgrades pip and installs requirements)
+   - **Start Command:** `python main.py`
+4. Add environment variables (see below)
+5. Deploy
+
+**Option 3: Simple Build (without pip upgrade)**
 1. Create a new Web Service
 2. Connect your GitHub repository
 3. Configure build and start commands:
@@ -40,6 +58,8 @@ python main.py --config production-config.json web
    - **Start Command:** `python main.py`
 4. Add environment variables (see below)
 5. Deploy
+   
+Note: Options 1 and 2 upgrade pip to the latest version during build to avoid upgrade notices in logs.
 
 Render automatically sets the `PORT` environment variable, and the bot will:
 - Detect the deployment environment
