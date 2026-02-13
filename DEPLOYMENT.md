@@ -231,6 +231,40 @@ Response:
 
 ## Troubleshooting
 
+### "Failed to find application" or "ImportError: Failed to find application, did you mean 'main:application'?"
+
+**Cause:** Render is running `gunicorn main.py` instead of the correct `gunicorn wsgi:application` command. This can happen when Render auto-detects Python projects and ignores the Procfile or render.yaml configuration.
+
+**Solution:**
+
+1. **Verify Procfile exists** at repository root with correct content (no `.py` extension):
+   ```
+   web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
+   ```
+
+2. **Verify render.yaml exists** with explicit `startCommand`:
+   ```yaml
+   services:
+     - type: web
+       name: token-scalper
+       runtime: python
+       startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
+   ```
+
+3. **Add runtime.txt** to repository root specifying Python version:
+   ```
+   python-3.11.0
+   ```
+
+4. **Manually configure in Render Dashboard** (if auto-detection fails):
+   - Go to your service settings
+   - Set **Start Command** to: `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
+   - Ensure **Build Command** is: `./build.sh`
+
+5. **Redeploy** the service after making changes
+
+**Note:** The command must use `wsgi:application` (module:callable format), not `main.py` or `wsgi.py` (file paths).
+
 ### "Application exited early"
 
 **Cause:** Bot is not detecting deployment environment and is exiting after showing help.
