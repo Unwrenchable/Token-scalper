@@ -5,6 +5,7 @@ Main CLI entry point for Token Scalper Bot
 import argparse
 import json
 import logging
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -53,7 +54,6 @@ def run_web_service(config_path):
         
         # Calculate number of workers (2 * CPU cores + 1, or 2 if CPU count unknown)
         try:
-            import multiprocessing
             workers = (2 * multiprocessing.cpu_count()) + 1
         except NotImplementedError:
             workers = 2
@@ -92,16 +92,17 @@ def run_web_service(config_path):
         
         logger.info(f"Starting Gunicorn with {workers} workers on port {port}")
         
-        # Set config path in environment for wsgi.py
+        # Set config path in environment for wsgi.py (though not currently used)
         os.environ['CONFIG_PATH'] = config_path
         
-        # Run Gunicorn
+        # Execute Gunicorn, replacing the current process
+        # This allows Gunicorn to handle its own signal management and process control
+        # The process will not return unless Gunicorn fails to start
         try:
-            subprocess.run(gunicorn_cmd, check=True)
-        except KeyboardInterrupt:
-            logger.info("Shutting down gracefully...")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Gunicorn failed: {e}")
+            os.execvp('gunicorn', gunicorn_cmd)
+        except OSError as e:
+            logger.error(f"Failed to start Gunicorn: {e}")
+            logger.error("Ensure Gunicorn is installed: pip install gunicorn")
             sys.exit(1)
     else:
         # Fall back to Flask development server
