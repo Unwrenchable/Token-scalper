@@ -35,15 +35,17 @@ python main.py --config production-config.json web
 **Setup:**
 
 **Option 1: Using render.yaml (Recommended)**
+
+The `render.yaml` file in the repository root includes:
+- **Build Command:** `./build.sh` (upgrades pip and installs requirements)
+- **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
+
+To deploy:
 1. Create a new Web Service
 2. Connect your GitHub repository
 3. Render will automatically detect `render.yaml` in the repository root
 4. Add environment variables (see below)
 5. Deploy
-
-The `render.yaml` file includes:
-- **Build Command:** `./build.sh` (upgrades pip and installs requirements)
-- **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
 
 **Option 2: Manual Configuration**
 1. Create a new Web Service
