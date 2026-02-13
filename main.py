@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 import sys
 from scalper_bot import TokenScalper
 from wallet_generator import main as wallet_gen_main
@@ -13,6 +14,9 @@ from airdrop_finder import AirdropFinder
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Default configuration file path
+DEFAULT_CONFIG_PATH = 'config.json'
 
 def run_bot(config_path):
     bot = TokenScalper(config_path)
@@ -35,9 +39,6 @@ def run_web_service(config_path):
     This is used when deployed to platforms like Render, Heroku, etc.
     Uses Gunicorn in production for better performance and security.
     """
-    import subprocess
-    import sys
-    
     logger.info("🚀 Starting Token Scalper Bot in web service mode")
     logger.info("📊 Dashboard will be available for monitoring")
     
@@ -67,7 +68,9 @@ def run_web_service(config_path):
                 logger.warning(f"Invalid WEB_CONCURRENCY value: {web_concurrency}, using calculated value: {workers}")
         
         # Timeout for worker processes (configurable)
-        timeout = 120  # Default timeout
+        # Default timeout of 120 seconds to handle long-running requests
+        # such as blockchain RPC calls, database queries, or AI analysis
+        timeout = 120
         timeout_env = os.getenv('GUNICORN_TIMEOUT')
         if timeout_env is not None:
             try:
@@ -135,7 +138,7 @@ def run_web_service(config_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Token Scalper Bot CLI")
-    parser.add_argument('--config', type=str, default='config.json', help='Path to config file')
+    parser.add_argument('--config', type=str, default=DEFAULT_CONFIG_PATH, help='Path to config file')
     subparsers = parser.add_subparsers(dest='command')
 
     subparsers.add_parser('run', help='Run the scalper bot')

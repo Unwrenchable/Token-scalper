@@ -11,6 +11,9 @@ import sys
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Default configuration file path
+DEFAULT_CONFIG_PATH = 'config.json'
+
 # Import Flask app with error handling
 try:
     from monitoring_dashboard import app
@@ -21,7 +24,7 @@ except ImportError as e:
     sys.exit(1)
 
 # Load configuration
-config_path = os.getenv('CONFIG_PATH', 'config.json')
+config_path = os.getenv('CONFIG_PATH', DEFAULT_CONFIG_PATH)
 try:
     config = ConfigLoader.load_config(config_path)
 except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
