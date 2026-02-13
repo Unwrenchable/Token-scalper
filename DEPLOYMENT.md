@@ -234,21 +234,24 @@ python main.py web
 **✅ Production-ready by default!** The bot now uses Gunicorn automatically in web service mode for better performance and security.
 
 **How it works:**
-- When `PORT` environment variable is detected, the bot automatically uses Gunicorn
-- Gunicorn is a production-grade WSGI HTTP Server for Python
+- Gunicorn is enabled by default (USE_GUNICORN=true)
+- When in web service mode (PORT set or `python main.py web`), Gunicorn starts automatically
 - Worker count is automatically calculated based on available CPU cores
-- Falls back to Flask development server only if `USE_GUNICORN=false` is set
+- Falls back to Flask development server only if `USE_GUNICORN=false` is explicitly set
 
 **Configuration:**
 
 The bot uses optimal defaults, but you can customize:
 
 ```bash
-# Control worker count (default: auto-calculated)
+# Control worker count (default: auto-calculated from CPU cores)
 WEB_CONCURRENCY=4 python main.py
 
-# Disable Gunicorn (not recommended for production)
+# Disable Gunicorn - forces Flask dev server (not recommended for production)
 USE_GUNICORN=false python main.py
+
+# Custom timeout for long-running requests (default: 120 seconds)
+GUNICORN_TIMEOUT=180 python main.py
 ```
 
 **Manual Gunicorn usage (advanced):**

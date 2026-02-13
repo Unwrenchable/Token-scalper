@@ -7,7 +7,6 @@ Config files are optional and primarily used when running the full bot locally.
 """
 
 import logging
-import os
 import sys
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +27,7 @@ application = app
 
 if __name__ == '__main__':
     # For development/testing only - use Gunicorn in production
+    import os
     port = int(os.getenv('PORT', 5000))
     logger.warning("Running Flask development server - use Gunicorn for production")
     app.run(host='0.0.0.0', port=port, debug=False)

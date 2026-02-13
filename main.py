@@ -3,6 +3,7 @@ Main CLI entry point for Token Scalper Bot
 """
 
 import argparse
+import json
 import logging
 import multiprocessing
 import os
@@ -107,7 +108,6 @@ def run_web_service(config_path):
         logger.warning("⚠️  Using Flask development server (not recommended for production)")
         logger.warning("Set USE_GUNICORN=true environment variable to use production server")
         
-        import json
         from monitoring_dashboard import MonitoringDashboard
         from config_loader import ConfigLoader
         
