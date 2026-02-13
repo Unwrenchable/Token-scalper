@@ -702,17 +702,20 @@ The bot can run as a web service with a monitoring dashboard, perfect for deploy
 
 **Key Features:**
 - Automatically detects deployment environment via `PORT` environment variable
+- Uses production-grade **Gunicorn WSGI server** automatically
 - Runs monitoring dashboard on configurable port
 - Binds to `0.0.0.0` for external access
+- Auto-scales workers based on available CPU cores
 - Keeps service alive for continuous monitoring
 
 **Automatic Detection:**
-When the `PORT` environment variable is set (as is common on deployment platforms), the bot automatically starts in web service mode:
+When the `PORT` environment variable is set (as is common on deployment platforms), the bot automatically starts in web service mode using Gunicorn:
 
 ```bash
 # On Render/Heroku, this happens automatically:
 PORT=10000 python main.py
 # Output: Detected PORT environment variable - running in web service mode
+# Output: 🔧 Using Gunicorn production WSGI server
 # Dashboard starts on http://0.0.0.0:10000
 ```
 
@@ -726,8 +729,8 @@ python main.py --config my-config.json web
 ```
 
 **Deployment Platforms:**
-- **Render.com**: Automatically detects PORT and runs dashboard
-- **Heroku**: Uses PORT from environment
+- **Render.com**: Automatically detects PORT and runs dashboard with Gunicorn
+- **Heroku**: Uses PORT from environment with Gunicorn
 - **Railway**: Compatible with PORT-based services
 - **Docker**: Expose port in Dockerfile and docker-compose
 
@@ -745,6 +748,8 @@ Once deployed, the dashboard provides:
 PORT=10000                    # Port for web service (auto-detected)
 FLASK_SECRET_KEY=your-secret  # Flask session secret
 ECOSYSTEM_API_KEY=your-key    # For webhook authentication
+WEB_CONCURRENCY=4            # Number of Gunicorn workers (optional, auto-calculated)
+USE_GUNICORN=true            # Use Gunicorn server (default: true)
 ```
 
 ## How It Protects You 🛡️
