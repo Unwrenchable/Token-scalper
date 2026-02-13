@@ -3,6 +3,7 @@ Main CLI entry point for Token Scalper Bot
 """
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -53,7 +54,7 @@ def run_web_service(config_path):
         try:
             import multiprocessing
             workers = (2 * multiprocessing.cpu_count()) + 1
-        except (NotImplementedError, ValueError):
+        except NotImplementedError:
             workers = 2
         
         # Limit workers based on available resources
@@ -110,7 +111,7 @@ def run_web_service(config_path):
         # Load config
         try:
             config = ConfigLoader.load_config(config_path)
-        except Exception as e:
+        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
             logger.warning(f"Could not load config from {config_path}: {e}")
             # Use minimal config for dashboard only
             config = {
