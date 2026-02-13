@@ -700,6 +700,8 @@ python main.py web
 
 The bot can run as a web service with a monitoring dashboard, perfect for deployment to platforms like **Render**, **Heroku**, **Railway**, or **DigitalOcean**.
 
+> **📘 For complete deployment instructions including Render Blueprint setup, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
 **Key Features:**
 - Automatically detects deployment environment via `PORT` environment variable
 - Uses production-grade **Gunicorn WSGI server** automatically
@@ -719,6 +721,19 @@ PORT=10000 python main.py
 # Dashboard starts on http://0.0.0.0:10000
 ```
 
+**Production Deployment (Recommended):**
+For production environments, use Gunicorn directly with the WSGI entry point:
+```bash
+# This is the recommended command for Render, Heroku, etc.
+gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:application
+```
+
+This command is already configured in:
+- `render.yaml` (for Blueprint deployment on Render)
+- `Procfile` (for Heroku and other platforms)
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for platform-specific setup instructions.
+
 **Manual Web Service Mode:**
 ```bash
 # Explicitly run as web service
@@ -729,10 +744,12 @@ python main.py --config my-config.json web
 ```
 
 **Deployment Platforms:**
-- **Render.com**: Automatically detects PORT and runs dashboard with Gunicorn
-- **Heroku**: Uses PORT from environment with Gunicorn
+- **Render.com**: Use Blueprint deployment (see [DEPLOYMENT.md](DEPLOYMENT.md#rendercom))
+- **Heroku**: Uses Procfile with Gunicorn
 - **Railway**: Compatible with PORT-based services
 - **Docker**: Expose port in Dockerfile and docker-compose
+
+> **⚠️ Important:** If deploying to Render, use the Blueprint method or ensure the Dashboard "Start Command" field is empty. See [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) if you encounter the error: `ImportError: Failed to find application`
 
 **Dashboard Access:**
 Once deployed, the dashboard provides:

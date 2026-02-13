@@ -1,5 +1,7 @@
 # Deployment Guide
 
+> **🚨 Quick Fix:** If you're seeing `ImportError: Failed to find application` or Render is running `gunicorn main.py`, jump to the [Troubleshooting section](#troubleshooting) for immediate solutions.
+
 ## Overview
 
 Token Scalper Bot can be deployed as a web service to cloud platforms like Render, Heroku, Railway, or any container-based hosting. The bot automatically detects deployment environments and starts a monitoring dashboard web server.
@@ -32,42 +34,52 @@ python main.py --config production-config.json web
 
 ### Render.com
 
+> **🚨 Quick Fix for ImportError:** See [README.render.md](README.render.md) for a quick reference guide, or jump to the [Troubleshooting section](#troubleshooting) below.
+> 
+> **⚠️ IMPORTANT:** If you see the error "ImportError: Failed to find application, did you mean 'main:application'?" or Render is running `gunicorn main.py`, your service has a manual Start Command in the dashboard that's overriding the repository configuration. See the [Troubleshooting](#troubleshooting) section below for solutions.
+
 **Setup:**
 
-**Option 1: Using render.yaml and Procfile (Recommended)**
+**Option 1: Using Blueprint (Infrastructure as Code) - MOST RELIABLE**
 
-The repository includes both `render.yaml` and `Procfile` for automatic deployment:
-- **render.yaml:** Configures build command, runtime, and environment variables
-- **Procfile:** Specifies the start command (takes precedence over auto-detection)
-- **Build Command:** `./build.sh` (upgrades pip and installs requirements)
+This option ensures Render always uses the configuration from your repository:
+
+1. In Render Dashboard, click **"New" → "Blueprint"**
+2. Connect your GitHub repository and select the branch
+3. Render will detect the `render.yaml` file and show you the deployment plan
+4. Add your environment variables (see below)
+5. Click "Apply" to deploy
+
+This method prevents Render from auto-detecting and using incorrect commands. The `render.yaml` file defines:
+- **Build Command:** `./build.sh`
 - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
 
-To deploy:
-1. Create a new Web Service
-2. Connect your GitHub repository
-3. Render will automatically detect `render.yaml` and `Procfile` in the repository root
-4. Add environment variables (see below)
-5. Deploy
+**Option 2: Using Procfile with Regular Web Service**
 
-**Option 2: Manual Configuration**
+The repository includes a `Procfile` that specifies the start command:
+
+1. Create a new **Web Service** (not Blueprint)
+2. Connect your GitHub repository
+3. In the service settings, ensure the **"Start Command" field is EMPTY** (leave it blank)
+4. Render will use the command from the Procfile
+5. Add environment variables (see below)
+6. Deploy
+
+**Note:** If the "Start Command" field has any value (e.g., `gunicorn main.py`), it will override the Procfile. You must clear this field.
+
+**Option 3: Manual Configuration (If Options 1 & 2 Don't Work)**
+
+Only use this if the above options don't work or if you need custom settings:
+
 1. Create a new Web Service
 2. Connect your GitHub repository
-3. Configure build and start commands:
+3. Manually configure build and start commands in the dashboard:
    - **Build Command:** `./build.sh`
    - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
 4. Add environment variables (see below)
 5. Deploy
 
-**Option 3: Using Python main.py (Alternative)**
-1. Create a new Web Service
-2. Connect your GitHub repository
-3. Configure build and start commands:
-   - **Build Command:** `./build.sh`
-   - **Start Command:** `python main.py`
-4. Add environment variables including `USE_GUNICORN=true` (see below)
-5. Deploy
-
-Note: Options 1 and 2 use Gunicorn directly for production deployment. Option 3 uses `python main.py` which can auto-detect and start Gunicorn when `USE_GUNICORN=true` is set, or fall back to Flask dev server.
+**Note:** Manual configuration in the dashboard will override both `render.yaml` and `Procfile`. Use Option 1 (Blueprint) or Option 2 (Procfile) for easier maintenance.
 
 Render automatically sets the `PORT` environment variable, which the bot uses to:
 - Bind to the correct port
@@ -233,37 +245,51 @@ Response:
 
 ### "Failed to find application" or "ImportError: Failed to find application, did you mean 'main:application'?"
 
-**Cause:** Render is running `gunicorn main.py` instead of the correct `gunicorn wsgi:application` command. This can happen when Render auto-detects Python projects and ignores the Procfile or render.yaml configuration.
+**Error in logs:**
+```
+Running 'gunicorn main.py'
+ImportError: Failed to find application, did you mean 'main:application'?
+```
 
-**Solution:**
+**Root Cause:** Render is running `gunicorn main.py` instead of the correct `gunicorn wsgi:application` command. This happens when:
+1. The service was created as a regular Web Service (not via Blueprint)
+2. The "Start Command" field in the dashboard has a value that overrides the repository configuration
+3. Render's auto-detection picked the wrong command
 
-1. **Verify Procfile exists** at repository root with correct content (no `.py` extension):
+**Solutions (in order of preference):**
+
+**Solution 1: Deploy as Blueprint (Best Solution)**
+1. Delete the existing service or leave it
+2. In Render Dashboard: **New → Blueprint**
+3. Connect your GitHub repository
+4. Render will detect the `render.yaml` file
+5. Review the plan and click "Apply"
+
+This ensures Render always uses the configuration from `render.yaml` in the repository.
+
+**Solution 2: Clear the Dashboard Start Command**
+1. Go to your service in the Render Dashboard
+2. Navigate to **Settings**
+3. Find the **"Start Command"** field
+4. **Clear it completely** (leave it blank/empty)
+5. Scroll down and click **"Save Changes"**
+6. Manually trigger a redeploy
+
+This allows Render to use the command from the `Procfile` in the repository.
+
+**Solution 3: Manually Set the Correct Command**
+1. Go to your service settings in the Render Dashboard
+2. Set **"Start Command"** to exactly:
    ```
-   web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
+   gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
    ```
+3. Ensure **"Build Command"** is: `./build.sh`
+4. Save and redeploy
 
-2. **Verify render.yaml exists** with explicit `startCommand`:
-   ```yaml
-   services:
-     - type: web
-       name: token-scalper
-       runtime: python
-       startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
-   ```
-
-3. **Add runtime.txt** to repository root specifying Python version:
-   ```
-   python-3.11.0
-   ```
-
-4. **Manually configure in Render Dashboard** (if auto-detection fails):
-   - Go to your service settings
-   - Set **Start Command** to: `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application`
-   - Ensure **Build Command** is: `./build.sh`
-
-5. **Redeploy** the service after making changes
-
-**Note:** The command must use `wsgi:application` (module:callable format), not `main.py` or `wsgi.py` (file paths).
+**Important Notes:**
+- The command must use `wsgi:application` (module:callable format), **NOT** `main.py` or `wsgi.py` (file paths)
+- Dashboard settings override both `render.yaml` and `Procfile`
+- Both `render.yaml` and `Procfile` in this repository are already correct - the issue is in the Render Dashboard configuration
 
 ### "Application exited early"
 
