@@ -32,9 +32,10 @@ def run_web_service(config_path):
     """
     Run the bot as a web service with dashboard
     This is used when deployed to platforms like Render, Heroku, etc.
+    Uses Gunicorn in production for better performance and security.
     """
-    from monitoring_dashboard import MonitoringDashboard
-    from config_loader import ConfigLoader
+    import subprocess
+    import sys
     
     logger.info("🚀 Starting Token Scalper Bot in web service mode")
     logger.info("📊 Dashboard will be available for monitoring")
@@ -42,31 +43,79 @@ def run_web_service(config_path):
     # Determine port from environment or default
     port = int(os.getenv('PORT', 5000))
     
-    # Load config
-    try:
-        config = ConfigLoader.load_config(config_path)
-    except Exception as e:
-        logger.warning(f"Could not load config from {config_path}: {e}")
-        # Use minimal config for dashboard only
-        config = {
-            'dashboard': {
-                'enabled': True,
-                'host': '0.0.0.0',
-                'port': port
+    # Check if we should use Gunicorn (production) or Flask dev server (development)
+    use_gunicorn = os.getenv('USE_GUNICORN', 'true').lower() in ('true', '1', 'yes')
+    
+    if use_gunicorn:
+        logger.info("🔧 Using Gunicorn production WSGI server")
+        
+        # Calculate number of workers (2 * CPU cores + 1, or 2 if CPU count unknown)
+        try:
+            import multiprocessing
+            workers = (2 * multiprocessing.cpu_count()) + 1
+        except:
+            workers = 2
+        
+        # Limit workers based on available resources
+        workers = min(workers, int(os.getenv('WEB_CONCURRENCY', workers)))
+        
+        # Gunicorn command
+        gunicorn_cmd = [
+            'gunicorn',
+            '--bind', f'0.0.0.0:{port}',
+            '--workers', str(workers),
+            '--timeout', '120',
+            '--access-logfile', '-',
+            '--error-logfile', '-',
+            '--log-level', 'info',
+            'wsgi:application'
+        ]
+        
+        logger.info(f"Starting Gunicorn with {workers} workers on port {port}")
+        
+        # Set config path in environment for wsgi.py
+        os.environ['CONFIG_PATH'] = config_path
+        
+        # Run Gunicorn
+        try:
+            subprocess.run(gunicorn_cmd, check=True)
+        except KeyboardInterrupt:
+            logger.info("Shutting down gracefully...")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Gunicorn failed: {e}")
+            sys.exit(1)
+    else:
+        # Fall back to Flask development server
+        logger.warning("⚠️  Using Flask development server (not recommended for production)")
+        logger.warning("Set USE_GUNICORN=true environment variable to use production server")
+        
+        from monitoring_dashboard import MonitoringDashboard
+        from config_loader import ConfigLoader
+        
+        # Load config
+        try:
+            config = ConfigLoader.load_config(config_path)
+        except Exception as e:
+            logger.warning(f"Could not load config from {config_path}: {e}")
+            # Use minimal config for dashboard only
+            config = {
+                'dashboard': {
+                    'enabled': True,
+                    'host': '0.0.0.0',
+                    'port': port
+                }
             }
-        }
-    
-    # Ensure dashboard is enabled for web service mode
-    if 'dashboard' not in config:
-        config['dashboard'] = {}
-    config['dashboard']['enabled'] = True
-    config['dashboard']['host'] = '0.0.0.0'  # Bind to all interfaces
-    # Use PORT from environment if set, otherwise use config value
-    config['dashboard']['port'] = int(os.getenv('PORT', config['dashboard'].get('port', 5000)))
-    
-    # Initialize and run dashboard
-    dashboard = MonitoringDashboard(config)
-    dashboard.run()
+        
+        # Ensure dashboard is enabled for web service mode
+        if 'dashboard' not in config:
+            config['dashboard'] = {}
+        config['dashboard']['enabled'] = True
+        config['dashboard']['host'] = '0.0.0.0'  # Bind to all interfaces
+        config['dashboard']['port'] = port
+        
+        # Initialize and run dashboard
+        dashboard = MonitoringDashboard(config)
+        dashboard.run()
 
 def main():
     parser = argparse.ArgumentParser(description="Token Scalper Bot CLI")
