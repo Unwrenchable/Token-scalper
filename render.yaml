@@ -3,9 +3,7 @@ services:
     name: token-scalper
     runtime: python
     buildCommand: ./build.sh
-    startCommand: python main.py  # main.py auto-starts Gunicorn when USE_GUNICORN=true
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: USE_GUNICORN
-        value: true  # main.py detects this and starts Gunicorn automatically
