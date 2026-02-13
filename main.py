@@ -60,10 +60,19 @@ def run_web_service(config_path):
         # WEB_CONCURRENCY is set by platforms like Render and Heroku
         web_concurrency = os.getenv('WEB_CONCURRENCY')
         if web_concurrency is not None:
-            workers = min(workers, int(web_concurrency))
+            try:
+                workers = min(workers, int(web_concurrency))
+            except ValueError:
+                logger.warning(f"Invalid WEB_CONCURRENCY value: {web_concurrency}, using calculated value: {workers}")
         
         # Timeout for worker processes (configurable)
-        timeout = int(os.getenv('GUNICORN_TIMEOUT', '120'))
+        timeout = 120  # Default timeout
+        timeout_env = os.getenv('GUNICORN_TIMEOUT')
+        if timeout_env is not None:
+            try:
+                timeout = int(timeout_env)
+            except ValueError:
+                logger.warning(f"Invalid GUNICORN_TIMEOUT value: {timeout_env}, using default: {timeout}")
         
         # Gunicorn command
         gunicorn_cmd = [

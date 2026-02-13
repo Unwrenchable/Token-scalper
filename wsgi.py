@@ -6,11 +6,19 @@ Provides the Flask app instance for WSGI servers like Gunicorn
 import logging
 import os
 import json
-from monitoring_dashboard import app
-from config_loader import ConfigLoader
+import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Import Flask app with error handling
+try:
+    from monitoring_dashboard import app
+    from config_loader import ConfigLoader
+except ImportError as e:
+    logger.error(f"Failed to import required modules: {e}")
+    logger.error("Ensure all dependencies are installed: pip install -r requirements.txt")
+    sys.exit(1)
 
 # Load configuration
 config_path = os.getenv('CONFIG_PATH', 'config.json')
