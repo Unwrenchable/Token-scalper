@@ -26,3 +26,6 @@ def main():
         set_key(ENV_PATH, f'WALLET_{i}_ADDRESS', acct.address)
 
     print(f"Generated {NUM_WALLETS} wallets and exported to {ENV_PATH}")
+
+if __name__ == "__main__":
+    main()
