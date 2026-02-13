@@ -5,6 +5,7 @@ Provides the Flask app instance for WSGI servers like Gunicorn
 
 import logging
 import os
+import json
 from monitoring_dashboard import app
 from config_loader import ConfigLoader
 
@@ -15,8 +16,11 @@ logger = logging.getLogger(__name__)
 config_path = os.getenv('CONFIG_PATH', 'config.json')
 try:
     config = ConfigLoader.load_config(config_path)
-except Exception as e:
+except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+    # In production, config loading failures are acceptable for dashboard-only mode
+    # The dashboard can run with minimal config using environment variables
     logger.warning(f"Could not load config from {config_path}: {e}")
+    logger.info("Using minimal dashboard-only configuration")
     # Use minimal config for dashboard only
     config = {
         'dashboard': {

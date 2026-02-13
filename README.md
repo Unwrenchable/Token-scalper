@@ -749,6 +749,7 @@ PORT=10000                    # Port for web service (auto-detected)
 FLASK_SECRET_KEY=your-secret  # Flask session secret
 ECOSYSTEM_API_KEY=your-key    # For webhook authentication
 WEB_CONCURRENCY=4            # Number of Gunicorn workers (optional, auto-calculated)
+GUNICORN_TIMEOUT=120         # Worker timeout in seconds (default: 120)
 USE_GUNICORN=true            # Use Gunicorn server (default: true)
 ```
 

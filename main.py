@@ -53,18 +53,24 @@ def run_web_service(config_path):
         try:
             import multiprocessing
             workers = (2 * multiprocessing.cpu_count()) + 1
-        except:
+        except (NotImplementedError, ValueError):
             workers = 2
         
         # Limit workers based on available resources
-        workers = min(workers, int(os.getenv('WEB_CONCURRENCY', workers)))
+        # WEB_CONCURRENCY is set by platforms like Render and Heroku
+        web_concurrency = os.getenv('WEB_CONCURRENCY')
+        if web_concurrency is not None:
+            workers = min(workers, int(web_concurrency))
+        
+        # Timeout for worker processes (configurable)
+        timeout = int(os.getenv('GUNICORN_TIMEOUT', '120'))
         
         # Gunicorn command
         gunicorn_cmd = [
             'gunicorn',
             '--bind', f'0.0.0.0:{port}',
             '--workers', str(workers),
-            '--timeout', '120',
+            '--timeout', str(timeout),
             '--access-logfile', '-',
             '--error-logfile', '-',
             '--log-level', 'info',
