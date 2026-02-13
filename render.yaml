@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: token-scalper
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: python main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: USE_GUNICORN
+        value: true
