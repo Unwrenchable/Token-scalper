@@ -177,7 +177,7 @@ class NinjaBotOrchestrator:
                     original_amount = bot.config['trading']['buy_amount_eth']
                     bot.config['trading']['buy_amount_eth'] = adjusted_amount
                     
-                    success = bot.buy_token(token_address)
+                    success = bot.buy_token(token_address, adjusted_amount)
                     
                     # Restore original config
                     bot.config['trading']['buy_amount_eth'] = original_amount

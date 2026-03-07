@@ -134,21 +134,6 @@ class MultiWalletManager:
                 logger.info(f"✅ Connected to {chain_name} wallet: {address}")
                 logger.info(f"   Balance: {base_balance:.4f} {base_symbol}, {usdc_balance:.2f} USDC")
                 return wallet_info
-                def _get_spl_token_balance(self, sol_client, owner_address, token_mint_address):
-                    """Get SPL token balance for a Solana wallet."""
-                    try:
-                        resp = sol_client.get_token_accounts_by_owner(owner_address, {'mint': token_mint_address})
-                        accounts = resp['result']['value']
-                        if not accounts:
-                            return 0.0
-                        # Get balance from the first account
-                        token_account = accounts[0]['pubkey']
-                        balance_resp = sol_client.get_token_account_balance(token_account)
-                        amount = float(balance_resp['result']['value']['uiAmount'])
-                        return amount
-                    except Exception as e:
-                        logger.debug(f"Could not get SPL token balance for {token_mint_address}: {e}")
-                        return 0.0
             else:
                 # EVM logic
                 w3 = Web3(Web3.HTTPProvider(rpc_url))
@@ -184,7 +169,22 @@ class MultiWalletManager:
         except Exception as e:
             logger.error(f"Error connecting wallet: {e}")
             return None
-            
+
+    def _get_spl_token_balance(self, sol_client, owner_address, token_mint_address) -> float:
+        """Get SPL token balance for a Solana wallet."""
+        try:
+            resp = sol_client.get_token_accounts_by_owner(owner_address, {'mint': token_mint_address})
+            accounts = resp['result']['value']
+            if not accounts:
+                return 0.0
+            token_account = accounts[0]['pubkey']
+            balance_resp = sol_client.get_token_account_balance(token_account)
+            amount = float(balance_resp['result']['value']['uiAmount'])
+            return amount
+        except Exception as e:
+            logger.debug(f"Could not get SPL token balance for {token_mint_address}: {e}")
+            return 0.0
+
     def _get_token_balance(self, w3: Web3, address: str, token_address: str) -> float:
         """Get ERC20 token balance"""
         try:
@@ -261,7 +261,6 @@ class MultiWalletManager:
         base_price = base_prices.get(chain_id, 0)
         if isinstance(chain_id, str) and chain_id.lower().startswith('solana'):
             base_price = base_prices['solana-devnet']
-        return (base_amount * base_price) + usdc_amount
         return (base_amount * base_price) + usdc_amount
         
     def connect_all_wallets(self) -> List[Dict]:

@@ -19,8 +19,7 @@ DEFAULT_CONFIG_PATH = 'config.json'
 
 def run_bot(config_path):
     bot = TokenScalper(config_path)
-    bot.search_and_participate_airdrops()
-    # You can add more bot actions here (e.g., start trading loop)
+    bot.run()
 
 def search_airdrops():
     finder = AirdropFinder()
