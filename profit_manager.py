@@ -18,10 +18,13 @@ class ProfitManager:
         self.usdc_balance = 0.0  # Track USDC balance
         self.base_currency_prices: List[Dict] = []  # Historical base currency prices
         self.conversion_history: List[Dict] = []  # Track all conversions
-        
+        # Resolve chain_id from config: prefer active wallet chain, fall back to first wallet
+        wallets = config.get('wallets', [])
+        self._chain_id = wallets[0].get('chain_id', 1) if wallets else 1
+
     def get_base_currency_name(self) -> str:
         """Get the name of the base currency (ETH, SOL, BNB, etc.)"""
-        chain_id = self.config['network']['chain_id']
+        chain_id = self._chain_id
         
         # Map chain IDs to currency names
         chain_map = {
