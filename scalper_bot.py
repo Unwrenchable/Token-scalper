@@ -247,7 +247,7 @@ class TokenScalper:
                 # Filter by liquidity
                 liquidity = pair.get('liquidity', {})
                 liquidity_usd = float(liquidity.get('usd', 0)) if isinstance(liquidity, dict) else 0
-                if liquidity_usd < (min_liquidity * 1000):  # rough ETH->USD conversion
+                if liquidity_usd < (min_liquidity * 2000):  # min_liquidity is in ETH; use ~$2000/ETH as conservative floor
                     continue
                 token_address = pair.get('baseToken', {}).get('address', '')
                 if not token_address:
@@ -324,8 +324,8 @@ class TokenScalper:
                 ai_result = self.ai_analyzer.analyze_token_contract(token_address)
                 analysis['ai'] = ai_result
 
-            # Opportunity scoring
-            token_data = {'address': token_address, 'liquidity_usd': liquidity * 3000}
+            # Opportunity scoring (liquidity already in USD from check_liquidity)
+            token_data = {'address': token_address, 'liquidity_usd': liquidity}
             opportunity_score, score_details = self.opportunity_scorer.score_token(
                 token_data, safety_results, ai_analysis=ai_result
             )
@@ -461,7 +461,7 @@ class TokenScalper:
             # Use the first pair's price change as a proxy
             pair = pairs[0]
             price_change = pair.get('priceChange', {})
-            change_h1 = float(price_change.get('h1', 0) or 0)
+            change_h1 = float(price_change.get('h1', 0))
             # Approximate multiplier from % change since entry
             buy_time = position.get('buy_time', time.time())
             age_seconds = time.time() - buy_time
@@ -469,7 +469,7 @@ class TokenScalper:
             if age_seconds < 3600:
                 pct = change_h1
             else:
-                pct = float(price_change.get('h24', 0) or 0)
+                pct = float(price_change.get('h24', 0))
             multiplier = 1.0 + (pct / 100.0)
             return max(0.0, multiplier)
         except Exception:

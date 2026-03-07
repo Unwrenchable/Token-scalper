@@ -92,6 +92,13 @@ class EVMDexTrader:
         ]
         self.router = self.w3.eth.contract(address=self.router_address, abi=self.router_abi)
 
+    def _get_gas_price(self) -> int:
+        """Get current gas price from the network, with a minimum floor."""
+        try:
+            return self.w3.eth.gas_price
+        except Exception:
+            return self.w3.to_wei('5', 'gwei')
+
     def buy_token(self, token_address: str, amount_eth: float, slippage: float = 0.05):
         """Buy a token using Uniswap/PancakeSwap V2 Router (ETH -> token)."""
         try:
@@ -106,7 +113,7 @@ class EVMDexTrader:
                 'from': self.account.address,
                 'value': amount_in_wei,
                 'gas': 300000,
-                'gasPrice': self.w3.to_wei('5', 'gwei'),
+                'gasPrice': self._get_gas_price(),
                 'nonce': self.w3.eth.get_transaction_count(self.account.address)
             })
             signed = self.account.sign_transaction(txn)
@@ -124,6 +131,7 @@ class EVMDexTrader:
             weth = self.w3.to_checksum_address(self.weth_address)
             path = [token, weth]
             deadline = self.w3.eth.get_block('latest').timestamp + 1200
+            gas_price = self._get_gas_price()
 
             # Get token decimals and convert amount to raw units
             token_contract = self.w3.eth.contract(address=token, abi=ERC20_APPROVE_ABI)
@@ -136,7 +144,7 @@ class EVMDexTrader:
             ).build_transaction({
                 'from': self.account.address,
                 'gas': 100000,
-                'gasPrice': self.w3.to_wei('5', 'gwei'),
+                'gasPrice': gas_price,
                 'nonce': self.w3.eth.get_transaction_count(self.account.address)
             })
             signed_approve = self.account.sign_transaction(approve_txn)
@@ -148,7 +156,7 @@ class EVMDexTrader:
             ).build_transaction({
                 'from': self.account.address,
                 'gas': 300000,
-                'gasPrice': self.w3.to_wei('5', 'gwei'),
+                'gasPrice': gas_price,
                 'nonce': self.w3.eth.get_transaction_count(self.account.address)
             })
             signed_swap = self.account.sign_transaction(swap_txn)
